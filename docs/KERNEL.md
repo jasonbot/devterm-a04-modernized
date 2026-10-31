@@ -121,9 +121,9 @@ kernel mount.
 
 ## Display and console
 
-The panel is a 480x1280 portrait DSI panel.  kmscon with Ly is the primary tty1
-console at 10 px and rotates the DRM output with `rotate=right`; the kernel
-`fbcon=rotate:1` path remains for the getty fallback.  The fallback 9x18 PSF2
+The panel is a 480x1280 portrait DSI panel.  kmscon with Ly is attempted first on tty1 at 10 px, but the vendor
+sun4i-drm driver lacks the dumb-buffer support kmscon requires.  The boot
+wrapper falls back to Ly on the kernel VT; `fbcon=rotate:1` is used there.  The fallback 9x18 PSF2
 font gives 142 columns by 26 rows.  `fbcon` uses
 `CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`, which is enabled.
 

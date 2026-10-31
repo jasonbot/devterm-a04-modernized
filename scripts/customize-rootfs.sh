@@ -27,7 +27,7 @@ if [ -s /work/artifacts/uboot/boot.scr ]; then
     cp /work/artifacts/uboot/boot.scr "$target/boot/boot.scr"
 fi
 
-chmod 755 "$target"/usr/local/bin/devterm-* "$target"/usr/local/sbin/devterm-growroot
+chmod 755 "$target"/usr/local/bin/devterm-* "$target"/usr/local/sbin/devterm-*
 chroot "$target" /bin/bash /tmp/rootfs-install.sh
 
 rm -rf "$target/opt/devterm-payload" "$target/tmp/rootfs-install.sh"

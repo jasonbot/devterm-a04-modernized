@@ -1,0 +1,18 @@
+#!/bin/sh
+# Start Ly on a VT.  Prefer kmscon, but the vendor A04 sun4i-drm driver used
+# by the 5.10 kernel has no dumb-buffer support, so kmscon cannot run there.
+# If kmscon exits for any reason, hand the same VT to Ly on the kernel fbcon.
+set -u
+vt="${1:-tty1}"
+
+if [ -x /usr/bin/kmscon ]; then
+    /usr/bin/kmscon --term=linux --vt="$vt" \
+        --login -- /usr/bin/ly --use-kmscon-vt
+fi
+
+# kmscon can leave a VT in graphics mode.  Re-select it and let agetty/Ly
+# take over the normal kernel console.
+num="${vt#tty}"
+/usr/bin/deallocvt "$num" >/dev/null 2>&1 || true
+/usr/bin/chvt "$num" >/dev/null 2>&1 || true
+exec /usr/sbin/agetty -nl /usr/bin/ly "$vt" linux

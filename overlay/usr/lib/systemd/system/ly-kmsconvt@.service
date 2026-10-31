@@ -8,10 +8,10 @@ Conflicts=getty@%i.service kmsconvt@%i.service ly@%i.service
 OnFailure=ly@%i.service
 
 [Service]
-ExecStart=/usr/bin/kmscon --term=linux --vt=%I --login -- /usr/bin/ly --use-kmscon-vt
+ExecStart=/usr/local/sbin/devterm-ly-console %I
 Type=idle
 Restart=always
-RestartSec=0
+RestartSec=2
 UtmpIdentifier=%I
 StandardInput=tty
 StandardOutput=tty

@@ -106,7 +106,8 @@ make verify
 - installs NetworkManager, SSH, console-setup, fonts, Chromium runtime
   dependencies and the rest of the package list in `scripts/build-rootfs.sh`
 - installs `kmscon` from `trixie-backports` and Ly as the tty1 login screen,
-  with `ly@tty1` as the automatic fallback
+  with Ly on kernel fbcon as the automatic fallback if kmscon cannot use the
+  vendor DRM driver
 - runs `scripts/rootfs-install.sh` inside the target:
   - vendor kernel, audio, fan, gearbox and wiringPi packages
   - apt kernel pinning (`overlay/etc/apt/preferences.d/00-devterm-kernel.pref`)

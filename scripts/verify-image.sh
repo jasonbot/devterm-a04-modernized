@@ -24,6 +24,7 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /boot/extlinux/extlinux.conf /etc/vconsole.conf \
          /opt/carbonyl/carbonyl /usr/bin/kmscon /etc/kmscon/kmscon.conf \
          /usr/bin/ly /etc/ly/config.lua /etc/pam.d/ly \
+         /usr/local/sbin/devterm-ly-console \
          /usr/lib/systemd/system/ly-kmsconvt@.service \
          /etc/apt/preferences.d/00-devterm-kernel.pref \
          /usr/local/share/fonts/nerd-fonts/PaperMonoNerdFont-Regular.otf; do

@@ -84,11 +84,16 @@ sudo iw reg set US
 
 ## Console and font: kmscon + Paper Mono Nerd Font
 
-`tty1` is served by **kmscon**, a userspace DRM console, and **Ly** is the
-login screen on top of it.  kmscon renders the OpenType **Paper Mono Nerd
-Font** at 10 px, rotated to the panel's landscape orientation
-(`rotate=right`).  If kmscon cannot start, systemd falls back to `ly@tty1` on
-the kernel fbcon (with the PSF2 font).
+`tty1` is served by **Ly**, normally on top of **kmscon**.  kmscon renders the
+OpenType **Paper Mono Nerd Font** at 10 px, rotated to the panel's landscape
+orientation (`rotate=right`).
+
+The A04 vendor 5.10 DRM driver does not provide the dumb buffers kmscon needs.
+The `devterm-ly-console` wrapper therefore tries kmscon once and then falls
+back to **Ly on the kernel fbcon** (with the PSF2 font).  If you see kmscon
+errors such as `doesn't support universal planes` or `driver does not support
+dumb buffers`, that is expected and Ly should still appear.  The wrapper uses
+`RestartSec=2` and does not spin forever on the same error.
 
 List and switch both the kmscon size and the fbcon fallback:
 
