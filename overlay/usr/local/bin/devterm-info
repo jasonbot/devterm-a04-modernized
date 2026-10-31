@@ -1,0 +1,10 @@
+#!/bin/sh
+# Small hardware/software summary useful on the device.
+set -eu
+printf 'Model:   '; tr -d '\0' </proc/device-tree/model 2>/dev/null || echo unknown
+printf 'Kernel:  '; uname -sr
+printf 'Debian:  '; . /etc/os-release; echo "$PRETTY_NAME"
+printf 'Memory:  '; free -h | awk '/Mem:/ {print $2 " total, " $7 " available"}'
+printf 'Display: '; cat /sys/class/graphics/fb0/virtual_size 2>/dev/null || echo unknown
+printf 'Wi-Fi:   '; nmcli -t -f DEVICE,TYPE,STATE device 2>/dev/null | grep wireless || echo no wireless device
+printf 'Printer: '; systemctl is-active devterm-printer.service 2>/dev/null || true

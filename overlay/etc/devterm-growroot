@@ -1,0 +1,2 @@
+First boot: grow the root partition to the full SD card.
+This file is removed by devterm-growroot.service.

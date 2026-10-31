@@ -1,0 +1,23 @@
+#!/bin/sh
+# Launch Carbonyl, a Chromium-based browser that renders into the Linux
+# framebuffer console (no X11 and no Wayland).
+set -eu
+
+url="${1:-https://example.com}"
+case "${TERM:-}" in
+    linux|dumb|"") export TERM=xterm-256color ;;
+esac
+
+if [ ! -x /opt/carbonyl/carbonyl ]; then
+    echo "Carbonyl is not installed; falling back to w3m." >&2
+    exec w3m "$url"
+fi
+
+# Chromium's sandbox is unavailable inside the usual single-user setup here.
+# --disable-dev-shm-usage keeps it from depending on a large /dev/shm.
+exec /opt/carbonyl/carbonyl \
+    --no-sandbox \
+    --disable-gpu \
+    --disable-dev-shm-usage \
+    --user-data-dir="${HOME:-/tmp}/.cache/carbonyl" \
+    "$url"

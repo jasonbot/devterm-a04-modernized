@@ -1,0 +1,15 @@
+#!/bin/sh
+# Resize the last MBR partition and the ext4 filesystem after the image is
+# flashed to a larger SD card.  Safe to run when there is nothing to grow.
+set -eu
+
+src=$(findmnt -n -o SOURCE /)
+case "$src" in
+    /dev/mmcblk*p*) disk="${src%p*}"; part="${src##*p}" ;;
+    /dev/sd[a-z]*|/dev/vd[a-z]*) disk="${src%[0-9]*}"; part="${src##*[!0-9]}" ;;
+    *) echo "unsupported root device: $src" >&2; exit 0 ;;
+esac
+
+echo "growing $disk partition $part"
+growpart "$disk" "$part" || { echo "growpart found nothing to grow"; exit 0; }
+resize2fs "$src"

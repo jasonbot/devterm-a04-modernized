@@ -1,0 +1,54 @@
+#!/bin/sh
+# List or switch the framebuffer console font.  Persists the choice for the
+# next boot by updating /etc/vconsole.conf and console-setup.
+set -eu
+
+DIR=/usr/share/consolefonts
+
+if [ "$#" -eq 0 ] || [ "${1:-}" = "--list" ]; then
+    echo "Installed Paper Mono console sizes:"
+    for f in "$DIR"/PaperMonoNerdFont-*.psf.gz; do
+        [ -e "$f" ] || continue
+        b=$(basename "$f" .psf.gz)
+        echo "  $b"
+    done
+    echo
+    echo "usage: devterm-font NAME   (for example: devterm-font PaperMonoNerdFont-8x16)"
+    exit 0
+fi
+
+name="${1%.psf.gz}"
+name="${name%.psf}"
+font="$DIR/$name.psf.gz"
+[ -f "$font" ] || { echo "no such console font: $name" >&2; exit 1; }
+
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo "$0" "$@"
+fi
+
+setfont "$font" 2>/dev/null || true
+sed -i "s/^FONT=.*/FONT=$name/" /etc/vconsole.conf
+
+case "$name" in
+    *-*x*)
+        face="${name%-*}"
+        size="${name##*-}"
+        sed -i "s/^FONTFACE=.*/FONTFACE=\"$face\"/; s/^FONTSIZE=.*/FONTSIZE=\"$size\"/" \
+            /etc/default/console-setup
+        ;;
+esac
+
+# kmscon uses the OpenType font, not PSF.  Map the requested cell height to
+# its font-size.  The new size applies to the next kmscon terminal start; we
+# deliberately do not kill the terminal the user is typing in.
+if [ -f /etc/kmscon/kmscon.conf ]; then
+    height="${name##*x}"
+    case "$height" in
+        ''|*[!0-9]*) height=10 ;;
+    esac
+    sed -i "s/^font-size=.*/font-size=$height/" /etc/kmscon/kmscon.conf
+    sed -i "s/^font-name=.*/font-name=PaperMono Nerd Font/" /etc/kmscon/kmscon.conf
+    echo "kmscon font will be $height px on the next terminal start"
+fi
+
+echo "console font set to $name (persistent)"

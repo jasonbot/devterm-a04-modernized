@@ -1,0 +1,30 @@
+#!/bin/sh
+# Send text (or a raw ESC/POS file) to the A04 thermal printer.
+set -eu
+
+INPUT=/tmp/DEVTERM_PRINTER_IN
+OUTPUT=/tmp/DEVTERM_PRINTER_OUT
+
+if ! systemctl is-active --quiet devterm-socat.service 2>/dev/null; then
+    if [ "$(id -u)" -eq 0 ]; then
+        systemctl start devterm-socat.service devterm-printer.service || true
+    else
+        sudo systemctl start devterm-socat.service devterm-printer.service || true
+    fi
+    # The vendor socat script sleeps briefly before creating the PTY links.
+    sleep 2
+fi
+
+if [ ! -e "$INPUT" ]; then
+    echo "printer PTYs are not ready ($INPUT missing)" >&2
+    exit 1
+fi
+
+if [ "${1:-}" = "-f" ]; then
+    [ "$#" -eq 2 ] || { echo "usage: devterm-printer -f FILE" >&2; exit 2; }
+    timeout 10 sh -c 'cat "$1" > "$2"' sh "$2" "$INPUT"
+elif [ "$#" -eq 0 ]; then
+    timeout 10 sh -c 'cat > "$1"' sh "$INPUT"
+else
+    timeout 10 sh -c 'out=$1; shift; printf "%s\n" "$*" > "$out"' sh "$INPUT" "$@"
+fi

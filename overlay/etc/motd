@@ -1,0 +1,18 @@
+
+  ____              _____                    _    ___  _  _
+ |  _ \  _____   __|_   _|__ _ __ _ __ ___   / \  |  _ \| || |
+ | | | |/ _ \ \ / /  | |/ _ \ '__| '_ ` _ \ / _ \ | | | | || |_
+ | |_| |  __/\ V /   | |  __/ |  | | | | | / ___ \| |_| |__   _|
+ |____/ \___| \_/    |_|\___|_|  |_| |_| |_/_/   \_\___/   |_|
+
+ Debian 13 (trixie) arm64 + ClockworkPi A04 kernel 5.10.75
+
+  Login:        devterm / devterm   (root password is also devterm)
+  Change them:  passwd ; sudo passwd root
+  Wi-Fi:        nmtui        or  devterm-wifi <SSID> <password>
+  Browser:      devterm-kiosk https://example.com
+  Fonts:        devterm-font  (list or switch console fonts)
+  Printer:      devterm-printer "hello"   or  devterm-thermal-test
+
+  Console font is Paper Mono Nerd Font.  The panel is rotated 90 degrees
+  by the kernel command line (fbcon=rotate:1), giving 1280x480 text.

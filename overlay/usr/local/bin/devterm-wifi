@@ -1,0 +1,21 @@
+#!/bin/sh
+# Tiny wrapper around NetworkManager.  With no arguments it opens nmtui.
+set -eu
+
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo "$0" "$@"
+fi
+
+if [ "$#" -eq 0 ]; then
+    exec nmtui
+fi
+
+if [ "$#" -eq 2 ]; then
+    exec nmcli device wifi connect "$1" password "$2"
+fi
+
+cat >&2 <<EOF
+usage: devterm-wifi                 # interactive nmtui
+       devterm-wifi SSID PASSWORD
+EOF
+exit 2

@@ -1,0 +1,11 @@
+#!/bin/sh
+# Print a small self-test receipt.
+set -eu
+{
+    printf 'DevTerm A04 thermal printer test\n'
+    printf '===============================\n'
+    printf 'If you can read this, SPI and GPIO are working.\n'
+    printf 'Date: '
+    date -u
+    printf '\n\n\n'
+} | devterm-printer

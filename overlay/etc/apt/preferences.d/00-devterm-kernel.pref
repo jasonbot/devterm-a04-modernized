@@ -1,0 +1,15 @@
+# The A04 panel, backlight, AC200 audio and printer GPIO support live in the
+# ClockworkPi 5.10.75 kernel.  Do not let a Debian kernel package replace it
+# (or install a second kernel that extlinux will not boot).
+Package: linux-image-* linux-headers-* linux-modules-* linux-dtb-* linux-image-current-sunxi64 linux-dtb-current-sunxi64
+Pin: release *
+Pin-Priority: -1
+
+# Keep the vendor kernel and its audio dependency installed if present.
+Package: devterm-kernel-current-cpi-a04
+Pin: version 0.6
+Pin-Priority: 1001
+
+Package: devterm-audio-patch
+Pin: version 0.04
+Pin-Priority: 1001

@@ -1,0 +1,14 @@
+[Unit]
+Description=Grow the root partition to fill the SD card
+ConditionPathExists=/etc/devterm-growroot
+After=local-fs.target
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/devterm-growroot
+ExecStartPost=/bin/rm -f /etc/devterm-growroot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
