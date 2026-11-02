@@ -7,6 +7,7 @@ ensure_dirs
 UBOOT_VER=2025.01
 ATF_VER=2.11.0
 CARBONYL_VER=0.0.3
+CHAWAN_VER=0.5.1
 VENDOR_BASE=https://raw.githubusercontent.com/clockworkpi/apt/main/debian
 
 download() {
@@ -52,6 +53,11 @@ if [ ! -x "$ART/carbonyl/carbonyl" ]; then
     chmod +x "$ART/carbonyl/carbonyl"
 fi
 log "Carbonyl: $(du -sh "$ART/carbonyl" | cut -f1)"
+
+# Source for the additional terminal browser.  The build script does the
+# container build; caching the tarball here keeps it reproducible.
+download "https://git.sr.ht/~bptato/chawan/archive/v${CHAWAN_VER}.tar.gz" \
+    "$ART/src/chawan-${CHAWAN_VER}.tar.gz"
 
 # Nerd Fonts: keep every NerdFont file from the user's font directory and
 # install them system-wide later.  Hard links avoid duplicating ~0.6 GiB.

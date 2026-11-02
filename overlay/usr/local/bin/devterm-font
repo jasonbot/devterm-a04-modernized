@@ -44,7 +44,7 @@ esac
 if [ -f /etc/kmscon/kmscon.conf ]; then
     height="${name##*x}"
     case "$height" in
-        ''|*[!0-9]*) height=10 ;;
+        ''|*[!0-9]*) height=16 ;;
     esac
     sed -i "s/^font-size=.*/font-size=$height/" /etc/kmscon/kmscon.conf
     sed -i "s/^font-name=.*/font-name=PaperMono Nerd Font/" /etc/kmscon/kmscon.conf

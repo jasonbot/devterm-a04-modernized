@@ -60,7 +60,9 @@ chown -R devterm:devterm /home/devterm
 
 log "kmscon console"
 # kmscon is the userspace DRM console requested for this image.  It lives in
-# trixie-backports; the PSF/fbcon path below remains as a safe fallback.
+# trixie-backports and uses the drm2d backend, which only needs DRM dumb
+# buffers; the vendor sun4i-drm driver provides them.  The PSF/fbcon path
+# below remains as a fallback if kmscon cannot start at all.
 cat >/etc/apt/sources.list.d/backports.list <<'EOF'
 deb http://deb.debian.org/debian trixie-backports main
 EOF
@@ -70,12 +72,38 @@ cat >/etc/kmscon/kmscon.conf <<'EOF'
 # Paper Mono Nerd Font is installed system-wide by this image.
 font-engine=freetype
 font-name=PaperMono Nerd Font
-font-size=10
+font-size=16
 rotate=right
 xkb-model=pc105
 xkb-layout=us
-term=xterm-256color
+term=linux
+# The vendor 5.10 sun4i-drm driver provides DRM dumb buffers, so kmscon's
+# software drm2d backend works on the A04.  The H6 has no usable 3D driver in
+# this kernel, so never select the GBM/EGL drm3d backend.  Boolean options in
+# kmscon.conf are bare keywords, not key=value pairs (drm, no-hwaccel).
+drm
+no-hwaccel
 EOF
+
+log "Tailscale"
+# Official Debian trixie repository.  The daemon is enabled but not logged in;
+# run `tailscale up` after the first boot.
+install -d -m 0755 /usr/share/keyrings
+curl -fsSL https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg \
+    -o /usr/share/keyrings/tailscale-archive-keyring.gpg
+curl -fsSL https://pkgs.tailscale.com/stable/debian/trixie.tailscale-keyring.list \
+    -o /etc/apt/sources.list.d/tailscale.list
+apt-get update -qq
+apt-get install -y -o APT::Install-Recommends=false tailscale
+
+log "Yazi"
+# Official Yazi apt repository (arm64 builds are published there).
+curl -fsSL https://yazi-rs.github.io/builds/yazi-keyring.gpg \
+    -o /usr/share/keyrings/yazi-keyring.gpg
+echo 'deb [signed-by=/usr/share/keyrings/yazi-keyring.gpg] https://yazi-rs.github.io/builds/ stable main' \
+    > /etc/apt/sources.list.d/yazi.list
+apt-get update -qq
+apt-get install -y -o APT::Install-Recommends=false yazi
 
 log "filesystem layout"
 cat >/etc/fstab <<'EOF'
@@ -95,7 +123,7 @@ for f in "$PAYLOAD"/consolefonts/*.psf.gz; do
 done
 cat >/etc/vconsole.conf <<'EOF'
 KEYMAP=us
-FONT=PaperMonoNerdFont-9x18
+FONT=PaperMonoNerdFont-8x16
 FONT_MAP=
 FONT_UNIMAP=
 EOF
@@ -104,7 +132,7 @@ ACTIVE_CONSOLES="/dev/tty[1-6]"
 CHARMAP="UTF-8"
 CODESET="Lat15"
 FONTFACE="PaperMonoNerdFont"
-FONTSIZE="9x18"
+FONTSIZE="8x16"
 XKBMODEL="pc105"
 XKBLAYOUT="us"
 XKBVARIANT=""
@@ -134,6 +162,7 @@ ocp8178_bl
 pwm_sun4i
 spidev
 brcmfmac
+tun
 EOF
 cat >/etc/modprobe.d/devterm.conf <<'EOF'
 # The A04 panel is matched by panel-simple ("clockwork,cpi3-lcd").
@@ -236,12 +265,18 @@ cp -a "$PAYLOAD"/fonts/. /usr/local/share/fonts/nerd-fonts/
 chmod -R a+rX /usr/local/share/fonts
 fc-cache -f >/tmp/fontconfig.log 2>&1 || true
 
-log "kiosk browser"
+log "terminal browsers"
+# Carbonyl (Chromium-based) is kept as the compatibility browser.
 rm -rf /opt/carbonyl
 mkdir -p /opt/carbonyl
 cp -a "$PAYLOAD"/carbonyl/. /opt/carbonyl/
 chmod 755 /opt/carbonyl/carbonyl
 ln -sf /opt/carbonyl/carbonyl /usr/local/bin/carbonyl
+
+# Chawan is a small Nim-based TUI browser; its staged tree contains
+# /usr/bin/cha, /usr/bin/mancha, /usr/libexec/chawan and the man pages.
+cp -a "$PAYLOAD"/chawan/. /
+chmod 755 /usr/bin/cha /usr/bin/mancha
 
 log "Ly display manager"
 install -m 755 "$PAYLOAD/ly/ly" /usr/bin/ly
@@ -265,6 +300,8 @@ enable_unit() {
     fi
 }
 enable_unit NetworkManager.service
+enable_unit tailscaled.service
+enable_unit devterm-tailscale-operator.service
 enable_unit ssh.service
 enable_unit serial-getty@ttyS0.service
 enable_unit zramswap.service

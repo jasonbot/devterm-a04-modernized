@@ -47,8 +47,8 @@ DEVTERM_FONT_DIR=/path/to/fonts ./scripts/fetch.sh
 `fetch.sh` copies every `*NerdFont*` file and generates four PSF2 console
 fonts from `PaperMonoNerdFont-Regular.otf`:
 
-- `PaperMonoNerdFont-8x16.psf.gz` (small)
-- `PaperMonoNerdFont-9x18.psf.gz` (default, 14 px)
+- `PaperMonoNerdFont-8x16.psf.gz` (default, 8x16 cells)
+- `PaperMonoNerdFont-9x18.psf.gz` (9x18 cells)
 - `PaperMonoNerdFont-10x20.psf.gz`
 - `PaperMonoNerdFont-16x32.psf.gz`
 
@@ -67,6 +67,7 @@ Equivalent:
 make fetch
 make uboot
 make ly
+make chawan     # Chawan
 make rootfs
 make image
 make verify
@@ -81,6 +82,7 @@ make verify
 - ClockworkPi A04 kernel `devterm-kernel-current-cpi-a04_0.6_arm64.deb`
 - ClockworkPi audio/fan/gearbox/wiringPi/printer packages
 - Carbonyl `v0.0.3` arm64
+- Chawan `0.5.1` source
 - Debian 13 arm64 packages during the rootfs stage
 
 `make uboot`:
@@ -98,25 +100,39 @@ make verify
 
 - downloads Zig 0.17 for arm64 into `artifacts/src`
 - clones Ly at its pinned commit and builds it with X11 support disabled
+- builds Ly with `-Dcpu=cortex_a53`: the A04's H6 is an ARMv8.0 Cortex-A53,
+  and Zig's native/container CPU would emit ARMv8.1+ instructions (LSE) that
+  SIGILL on the device
 - writes `artifacts/ly/ly`
+
+`make chawan`:
+
+- builds a Debian trixie arm64 container with the official Nim `2.2.12`
+  aarch64 compiler (trixie has no Nim package)
+- runs `make` and `make install PREFIX=/usr` for Chawan `0.5.1`
+- writes the staged `/usr` tree to `artifacts/chawan/`
 
 `make rootfs`:
 
 - creates an arm64 `trixie` rootfs with `mmdebstrap --format=tar`
 - installs NetworkManager, SSH, console-setup, fonts, Chromium runtime
   dependencies and the rest of the package list in `scripts/build-rootfs.sh`
-- installs `kmscon` from `trixie-backports` and Ly as the tty1 login screen,
-  with Ly on kernel fbcon as the automatic fallback if kmscon cannot use the
-  vendor DRM driver
+- adds the Tailscale and Yazi apt repositories and installs `tailscale`
+  and `yazi`
+- installs `kmscon` from `trixie-backports` and Ly as the tty1 login screen;
+  kmscon uses its dumb-buffer drm2d backend, which the vendor sun4i-drm driver
+  supports, with Ly on the kernel fbcon only as a failed-start fallback
 - runs `scripts/rootfs-install.sh` inside the target:
   - vendor kernel, audio, fan, gearbox and wiringPi packages
   - apt kernel pinning (`overlay/etc/apt/preferences.d/00-devterm-kernel.pref`)
     and `apt-mark hold` for the vendor kernel/audio packages
-  - Ly inside kmscon on tty1; `ly@tty1` is the kernel-VT fallback
+  - Ly inside kmscon on tty1 (drm2d, `hwaccel=off`); `ly@tty1` is the
+    kernel-VT fallback for a kmscon initialisation failure
   - printer daemon extracted without CUPS
   - `/boot/Image`, `/boot/initrd.img`, `/boot/devterm-a04.dtb`
   - `/boot/extlinux/extlinux.conf` and `/boot/boot.scr`
-  - console font, NerdFonts, Carbonyl, services, user and Wi-Fi config
+  - console font, NerdFonts, Carbonyl, Chawan, Tailscale, Yazi, services,
+    user and Wi-Fi config
 - extracts the tar as the normal user and checks required files
 
 `make image`:

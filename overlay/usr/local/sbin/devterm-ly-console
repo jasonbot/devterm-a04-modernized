@@ -1,13 +1,37 @@
 #!/bin/sh
-# Start Ly on a VT.  Prefer kmscon, but the vendor A04 sun4i-drm driver used
-# by the 5.10 kernel has no dumb-buffer support, so kmscon cannot run there.
-# If kmscon exits for any reason, hand the same VT to Ly on the kernel fbcon.
+# Start Ly inside kmscon on a VT.
+#
+# The A04 vendor 5.10 kernel's sun4i-drm driver implements DRM dumb buffers
+# (drm_sun4i_gem_dumb_create -> drm_gem_cma_dumb_create_internal), which is
+# exactly what kmscon's software drm2d backend needs.  The H6 has no supported
+# 3D driver in this kernel, so the drm3d (GBM/EGL) backend is not available;
+# --no-hwaccel keeps kmscon on drm2d.
+#
+# kmscon's diagnostics go to a log file, not to the VT: a failing start would
+# otherwise flash log lines on the screen and erase them before they can be
+# read.  Only fall back to the kernel fbcon when kmscon actually fails to
+# start.  A clean exit (the user logged out of Ly) or a long-running session
+# is left to systemd's Restart=always, so the next login prompt is kmscon.
 set -u
 vt="${1:-tty1}"
+log="/var/log/kmscon-$vt.log"
 
 if [ -x /usr/bin/kmscon ]; then
-    /usr/bin/kmscon --term=linux --vt="$vt" \
-        --login -- /usr/bin/ly --use-kmscon-vt
+    tries=0
+    while [ "$tries" -lt 3 ]; do
+        tries=$((tries + 1))
+        : >"$log" 2>/dev/null || log=/dev/null
+        start=$(date +%s)
+        /usr/bin/kmscon --term=linux --no-hwaccel --vt="$vt" \
+            --login -- /usr/bin/ly --use-kmscon-vt >>"$log" 2>&1
+        rc=$?
+        elapsed=$(( $(date +%s) - start ))
+        if [ "$rc" -eq 0 ] || [ "$elapsed" -ge 10 ]; then
+            exit "$rc"
+        fi
+        sleep 2
+    done
+    echo "kmscon failed on $vt (rc=$rc); using fbcon" >>"$log"
 fi
 
 # kmscon can leave a VT in graphics mode.  Re-select it and let agetty/Ly

@@ -85,15 +85,20 @@ sudo iw reg set US
 ## Console and font: kmscon + Paper Mono Nerd Font
 
 `tty1` is served by **Ly**, normally on top of **kmscon**.  kmscon renders the
-OpenType **Paper Mono Nerd Font** at 10 px, rotated to the panel's landscape
+OpenType **Paper Mono Nerd Font** at 16 px (8x16 cells), rotated to the panel's landscape
 orientation (`rotate=right`).
 
-The A04 vendor 5.10 DRM driver does not provide the dumb buffers kmscon needs.
-The `devterm-ly-console` wrapper therefore tries kmscon once and then falls
-back to **Ly on the kernel fbcon** (with the PSF2 font).  If you see kmscon
-errors such as `doesn't support universal planes` or `driver does not support
-dumb buffers`, that is expected and Ly should still appear.  The wrapper uses
-`RestartSec=2` and does not spin forever on the same error.
+kmscon uses its software **drm2d** backend.  The vendor 5.10 sun4i-drm driver
+implements DRM dumb buffers (`drm_sun4i_gem_dumb_create`), which is what drm2d
+needs; the H6 has no usable 3D driver in this kernel, so `hwaccel=off` and
+`drm=on` are set in `/etc/kmscon/kmscon.conf` and the wrapper also passes
+`--no-hwaccel`.
+
+`devterm-ly-console` falls back to **Ly on the kernel fbcon** (with the PSF2
+font) only when kmscon fails to initialise: a non-zero exit within 10 seconds.
+A normal logout exits kmscon cleanly, systemd restarts it, and the next login
+screen is kmscon again.  If kmscon cannot use DRM, the fallback still gives a
+working login on the kernel VT.
 
 List and switch both the kmscon size and the fbcon fallback:
 
@@ -111,7 +116,7 @@ wrapper does not kill your current session.  To apply the fbcon fallback
 immediately:
 
 ```sh
-sudo setfont /usr/share/consolefonts/PaperMonoNerdFont-9x18.psf.gz
+sudo setfont /usr/share/consolefonts/PaperMonoNerdFont-8x16.psf.gz
 sudo systemctl restart systemd-vconsole-setup
 ```
 
@@ -138,33 +143,95 @@ fc-match 'PaperMono Nerd Font'
 Applications that use fontconfig can select any installed family.  The
 console itself can only use the generated PSF2 sizes above.
 
-## Fullscreen browser without X or Wayland
+## Terminal browsers without X or Wayland
 
-Carbonyl renders Chromium into the Linux framebuffer console:
-
-```sh
-devterm-kiosk https://example.com
-devterm-kiosk https://en.wikipedia.org
-```
-
-It runs as the current user, uses software rendering, and writes its profile
-to `~/.cache/carbonyl`.  Exit with the browser's quit key or `Ctrl+C`; the
-terminal returns to the shell.  If Carbonyl cannot start, the wrapper falls
-back to `w3m`:
+Two browsers are installed.  Both render into the text console.
 
 ```sh
-w3m https://example.com
+devterm-kiosk https://example.com   # Carbonyl (Chromium)
+cha https://example.com             # Chawan (Nim), smaller/faster
 ```
 
-The A04 has 2 GB of RAM.  Carbonyl/Chromium is heavy; close other programs,
-and avoid many tabs.  The image enables a 1 GB zram swap device.
+- **Carbonyl** is the Chromium-based original.  It has the widest site
+  compatibility but is the heaviest; `devterm-kiosk` runs it full-screen and
+  falls back to `w3m` if it cannot start.  Profile: `~/.cache/carbonyl`.
+- **Chawan** is a small, self-contained Nim engine with CSS, forms and an
+  optional JavaScript mode.  It is the lightest of the two.  `mancha` reads
+  man pages through it.
+
+The A04 has 2 GB of RAM.  Carbonyl/Chromium is heavy; close other programs
+and avoid many tabs.  Chawan is much lighter.  The image enables a 1 GB zram
+swap device.
 
 Useful checks:
 
 ```sh
 TERM=xterm-256color /opt/carbonyl/carbonyl --version
+cha -h
 ldd /opt/carbonyl/carbonyl
 ```
+
+## Yazi file manager
+
+`yazi` is installed from the official Yazi apt repository:
+
+```sh
+yazi            # current directory
+yazi /path      # another directory
+```
+
+Yazi uses the terminal's own fonts and images where the terminal supports
+them; kmscon renders text previews.  For richer previews install the optional
+tools, for example:
+
+```sh
+sudo apt install ffmpeg 7zip poppler-utils fd-find ripgrep fzf zoxide
+```
+
+The image is small and the A04 has 2 GB RAM, so add only what you use.
+
+## tmux
+
+The image ships `/etc/tmux.conf`:
+
+- prefix is `Ctrl-a` (like screen), mouse is enabled
+- `|` and `-` split the window vertically and horizontally
+- the status bar is bright white; the right side shows the live Wi-Fi
+  connection, the Tailscale IPv4 address (or login/off), and the time
+- clicking the status bar opens `nmtui` in a tmux popup via
+  `sudo devterm-wifi`
+- `devterm-wifi status` and `devterm-tailscale-status` print the same
+  one-line summaries for scripts
+
+Useful checks:
+
+```sh
+tmux -V
+tmux show-options -g prefix
+/usr/local/bin/devterm-wifi status
+```
+
+## Tailscale
+
+The official Tailscale package for Debian trixie is installed and
+`tailscaled.service` is enabled.  It is not logged in automatically; after the
+first boot run:
+
+```sh
+sudo tailscale up
+sudo tailscale status
+```
+
+Then reach the DevTerm by its Tailscale name or IP, for example:
+
+```sh
+ssh devterm@devterm-a04
+```
+
+`tailscale up --ssh` additionally enables Tailscale SSH.  The daemon needs
+`/dev/net/tun`; the image loads the `tun` module at boot.  A oneshot unit sets
+`devterm` as the Tailscale operator so the tmux status bar can query the
+node without running `sudo` every five seconds.
 
 ## Thermal printer (58 mm)
 
@@ -376,6 +443,21 @@ sudo systemctl restart systemd-vconsole-setup
 The font must be a PSF2 file.  The PSF files are installed in both
 `/usr/share/consolefonts` and `/usr/share/kbd/consolefonts`.
 
+### kmscon does not start
+
+kmscon's diagnostics are written to `/var/log/kmscon-ttyN.log` (they are kept
+off the VT so a failed start cannot flash and erase a message).  Check the log
+and the unit:
+
+```sh
+cat /var/log/kmscon-tty1.log
+systemctl status ly-kmsconvt@tty1
+journalctl -b -u 'ly-kmsconvt@*'
+```
+
+The wrapper retries kmscon three times, then leaves the VT to Ly on the kernel
+fbcon, so a working login remains available even if the DRM path fails.
+
 ### Browser runs out of memory
 
 The A04 has 2 GB RAM.  Close other programs, use one tab, and check swap:
@@ -385,8 +467,9 @@ free -h
 zramctl
 ```
 
-If Carbonyl is unusable, use `w3m`.  A lighter graphical browser would require
-X/Wayland, which this console-first image deliberately does not install.
+If Carbonyl is unusable, try `cha`; it uses much less memory.
+A graphical browser would require X/Wayland, which this console-first image
+deliberately does not install.
 
 ### Root filesystem did not grow
 

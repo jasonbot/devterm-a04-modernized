@@ -3,7 +3,7 @@
 
 [Unit]
 Description=TUI display manager on %I using KMSCON
-After=systemd-user-sessions.service plymouth-quit-wait.service rc-local.service kmsconvt@%i.service
+After=systemd-user-sessions.service plymouth-quit-wait.service rc-local.service systemd-vconsole-setup.service kmsconvt@%i.service
 Conflicts=getty@%i.service kmsconvt@%i.service ly@%i.service
 OnFailure=ly@%i.service
 

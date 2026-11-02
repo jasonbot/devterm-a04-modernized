@@ -13,11 +13,16 @@ the system makes the root filesystem use the rest of the card.
 - Debian 13 (`trixie`) for 64-bit ARM.
 - A text console with **kmscon**.
 - **Ly**, a text login screen, running inside kmscon.
-- **Paper Mono Nerd Font** at 10 px as the console font.
+- **Paper Mono Nerd Font** at a 16 px / 8x16 cell size as the console font.
 - Every NerdFont from your font folder, installed for all programs.
-- The **Carbonyl** web browser. It runs in the text console without X or
-  Wayland.
-- Wi-Fi, SSH, sound, fan control and the 58 mm thermal printer.
+- Two text-mode browsers, both usable without X or Wayland:
+  **Carbonyl** (Chromium) and **Chawan** (small Nim engine).
+- Wi-Fi, SSH, **Tailscale**, sound, fan control and the 58 mm thermal
+  printer.
+- **Yazi**, a fast terminal file manager (text previews; optional preview
+  tools can be installed from apt).
+- **tmux** configured with a `Ctrl-a` prefix and a clickable Wi-Fi status
+  section (with live Tailscale status) that opens the NetworkManager TUI.
 - The special ClockworkPi A04 kernel. Debian kernel packages are pinned so a
   normal `apt update && apt upgrade` cannot replace it by accident.
 
@@ -65,16 +70,17 @@ Build everything:
 Or run the steps one at a time:
 
 ```sh
-make fetch     # download sources, packages, fonts and Carbonyl
+make fetch     # download sources, packages, fonts and browsers
 make uboot     # build TF-A and U-Boot
 make ly        # build the Ly login screen
+make chawan    # build Chawan
 make rootfs    # build the Debian root filesystem
 make image     # make the card image
 make verify    # check the image
 ```
 
-The first build takes a while because it builds an arm64 Debian system and
-Ly. Later builds reuse cached downloads.
+The first build takes a while because it builds an arm64 Debian system, Ly
+and Chawan. Later builds reuse cached downloads and build trees.
 
 When it finishes, the flashable files are:
 

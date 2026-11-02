@@ -9,6 +9,7 @@ need mkimage
 [ -d "$ART/vendor" ] && [ -d "$ART/fonts" ] && [ -d "$ART/carbonyl" ] || \
     die "run scripts/fetch.sh first"
 [ -x "$ART/ly/ly" ] || die "run scripts/build-ly.sh first"
+[ -x "$ART/chawan/usr/bin/cha" ] || die "run scripts/build-chawan.sh first"
 [ -s "$ART/uboot/u-boot-sunxi-with-spl.bin" ] || \
     die "run scripts/build-uboot.sh first"
 
@@ -25,7 +26,7 @@ mkimage -A arm64 -O linux -T script -C none -n "DevTerm A04 boot" \
 chmod 777 "$ART/export"
 rm -f "$ART/export/rootfs.tar"
 
-packages="systemd-sysv,systemd-timesyncd,udev,dbus,initramfs-tools,kmod,e2fsprogs,fdisk,cloud-guest-utils,zram-tools,locales,tzdata,console-setup,keyboard-configuration,kbd,network-manager,wpasupplicant,iw,wireless-tools,rfkill,wireless-regdb,firmware-brcm80211,openssh-server,sudo,libpam-systemd,python3,socat,fonts-noto-cjk,fontconfig,fonts-dejavu-core,libfreetype6,libnss3,libnspr4,libexpat1,libasound2t64,libgbm1,libdrm2,libxkbcommon0,w3m,ca-certificates,curl,wget,less,nano,git,rsync,unzip,xz-utils,zstd,bzip2,alsa-utils,usbutils,pciutils,procps,psmisc,iproute2,iputils-ping,net-tools,htop,tmux,brightnessctl"
+packages="systemd-sysv,systemd-timesyncd,udev,dbus,initramfs-tools,kmod,e2fsprogs,fdisk,cloud-guest-utils,zram-tools,locales,tzdata,console-setup,keyboard-configuration,kbd,network-manager,wpasupplicant,iw,wireless-tools,rfkill,wireless-regdb,firmware-brcm80211,openssh-server,sudo,libpam-systemd,python3,socat,fonts-noto-cjk,fontconfig,fonts-dejavu-core,libfreetype6,libnss3,libnspr4,libexpat1,libasound2t64,libgbm1,libdrm2,libxkbcommon0,libstdc++6,zlib1g,libssh2-1t64,libbrotli1,libssl3t64,w3m,ca-certificates,curl,wget,less,nano,git,rsync,unzip,xz-utils,zstd,bzip2,alsa-utils,usbutils,pciutils,procps,psmisc,iproute2,iputils-ping,net-tools,htop,tmux,brightnessctl"
 
 log "building Debian trixie arm64 rootfs (this takes a few minutes)"
 podman run --rm --arch arm64 --network=host \
@@ -54,6 +55,10 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          boot/extlinux/extlinux.conf etc/vconsole.conf \
          usr/local/share/fonts/nerd-fonts/PaperMonoNerdFont-Regular.otf \
          opt/carbonyl/carbonyl usr/local/bin/devterm-kiosk \
+         usr/bin/cha usr/bin/mancha usr/libexec/chawan/cgi-bin/ssl \
+         usr/bin/tailscale usr/sbin/tailscaled usr/bin/yazi etc/tmux.conf \
+         usr/local/bin/devterm-wifi usr/local/bin/devterm-tailscale-status \
+         usr/lib/systemd/system/devterm-tailscale-operator.service \
          usr/bin/ly etc/ly/config.lua \
          usr/lib/systemd/system/ly-kmsconvt@.service \
          usr/lib/aarch64-linux-gnu/libasound.so.2; do

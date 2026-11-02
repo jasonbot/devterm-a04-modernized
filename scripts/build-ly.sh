@@ -56,11 +56,23 @@ podman run --rm --arch arm64 --userns=keep-id --user "$(id -u):$(id -g)" \
     -v "$LY_SRC:/src" -v "$ZIG_DIR:/opt/zig:ro" -w /src \
     devterm-ly-builder bash -c '
 set -euo pipefail
+# The A04 uses an Allwinner H6 (Cortex-A53, ARMv8.0-A).  Without an explicit
+# CPU model Zig treats the build container as "native" and may emit ARMv8.1+
+# instructions (LSE atomics, etc.) that SIGILL on the A53.
 /opt/zig/zig build -Denable_x11_support=false -Doptimize=ReleaseSafe \
-    -Ddefault_tty=1 -Dfallback_tty=1
+    -Dcpu=cortex_a53 -Ddefault_tty=1 -Dfallback_tty=1
 cp zig-out/bin/ly /src/ly.built
 '
 
 cp "$LY_SRC/ly.built" "$LY_BIN"
 chmod 755 "$LY_BIN"
+# Zig keeps debug_info in ReleaseSafe builds.  llvm-strip handles foreign
+# architectures; GNU strip is the fallback.
+if command -v llvm-strip >/dev/null 2>&1; then
+    llvm-strip --strip-all "$LY_BIN"
+elif command -v strip >/dev/null 2>&1; then
+    strip --strip-all "$LY_BIN" 2>/dev/null || true
+else
+    warn "no strip tool found; Ly will keep debug symbols"
+fi
 log "Ly built: $(du -h "$LY_BIN" | cut -f1) -> $LY_BIN"

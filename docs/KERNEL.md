@@ -121,11 +121,21 @@ kernel mount.
 
 ## Display and console
 
-The panel is a 480x1280 portrait DSI panel.  kmscon with Ly is attempted first on tty1 at 10 px, but the vendor
-sun4i-drm driver lacks the dumb-buffer support kmscon requires.  The boot
-wrapper falls back to Ly on the kernel VT; `fbcon=rotate:1` is used there.  The fallback 9x18 PSF2
-font gives 142 columns by 26 rows.  `fbcon` uses
-`CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`, which is enabled.
+The panel is a 480x1280 portrait DSI panel.  tty1 runs Ly inside kmscon at
+16 px (8x16 cells) with `rotate=right`.  kmscon uses its software drm2d backend: the vendor
+5.10 sun4i-drm driver provides DRM dumb buffers through
+`drm_sun4i_gem_dumb_create` (the symbol is present in the vendor kernel and
+wired into `sun4i_drv_driver`), and the H6 has no usable 3D driver in this
+kernel, so `hwaccel=off` is set in `/etc/kmscon/kmscon.conf`.
+
+`devterm-ly-console` falls back to Ly on the kernel VT only if kmscon fails
+to initialise (non-zero exit within 10 seconds); `fbcon=rotate:1` is used
+there.  The fallback 8x16 PSF2 font gives 160 columns by 30 rows.  `fbcon`
+uses `CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`, which is enabled.
+
+Ly must be built with `-Dcpu=cortex_a53` (see `scripts/build-ly.sh`).  A
+native/container build targets newer ARMv8.1 features and dies with
+`Illegal instruction` on the A53 before it can draw anything.
 
 The vendor kernel contains the panel description in `panel-simple`
 (`clockwork,cpi3-lcd`) and the OCP8178 backlight driver.  The separate

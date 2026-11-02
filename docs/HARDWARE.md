@@ -6,8 +6,9 @@
 - DSI panel described as `clockwork,cpi3-lcd` in the vendor DTB
 - `panel-simple` + vendor TCON-LCD changes
 - backlight: `ocp8178-backlight`, controlled by a GPIO
-- console: Ly inside kmscon on tty1 with `rotate=right`; the Ly-on-kernel-VT
-  fallback uses `fbcon=rotate:1`
+- console: Ly inside kmscon on tty1 with `rotate=right`; kmscon uses the
+  dumb-buffer drm2d backend (`no-hwaccel`) at a 16 px / 8x16 cell size.  The Ly-on-kernel-VT fallback
+  uses `fbcon=rotate:1`
 
 Useful checks:
 
