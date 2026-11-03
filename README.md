@@ -24,7 +24,8 @@ the system makes the root filesystem use the rest of the card.
 - **Yazi**, a fast terminal file manager (text previews; optional preview
   tools can be installed from apt).
 - **tmux** configured with a `Ctrl-a` prefix and a clickable Wi-Fi status
-  section (with live Tailscale status) that opens the NetworkManager TUI.
+  section; the bar also shows live Tailscale, battery (Nerd Font icon) and
+  the clock.
 - The special ClockworkPi A04 kernel. Debian kernel packages are pinned so a
   normal `apt update && apt upgrade` cannot replace it by accident.
 

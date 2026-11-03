@@ -1,0 +1,70 @@
+#!/bin/sh
+# One-line battery summary for the tmux status bar.
+#
+# Uses the same sysfs interface as starship's battery module: the first
+# /sys/class/power_supply entry of type "Battery".  On the A04 the AXP221 fuel
+# gauge is exposed by axp20x_battery as axp20x-battery/{capacity,status}.
+# Gauges without "capacity" fall back to the charge or energy counters.
+# POWER_SUPPLY_DIR overrides /sys/class/power_supply (useful for testing).
+set -u
+
+dir=${POWER_SUPPLY_DIR:-/sys/class/power_supply}
+
+batt=
+for d in "$dir"/*; do
+    [ "$(cat "$d/type" 2>/dev/null)" = Battery ] || continue
+    batt=$d
+    break
+done
+
+# Print the file's contents only if they are a plain non-negative integer.
+num() {
+    v=$(cat "$1" 2>/dev/null)
+    case $v in ''|*[!0-9]*) return 1 ;; esac
+    printf '%s' "$v"
+}
+
+if [ -z "$batt" ]; then
+    printf 'n/a'
+    exit 0
+fi
+
+pct=$(num "$batt/capacity") || pct=
+if [ -z "$pct" ]; then
+    now=$(num "$batt/charge_now") || now=
+    full=$(num "$batt/charge_full") || full=
+    if [ -z "$now" ] || [ -z "$full" ] || [ "$full" -eq 0 ]; then
+        now=$(num "$batt/energy_now") || now=
+        full=$(num "$batt/energy_full") || full=
+    fi
+    if [ -n "$now" ] && [ -n "$full" ] && [ "$full" -gt 0 ]; then
+        pct=$((now * 100 / full))
+    fi
+fi
+
+if [ -z "$pct" ]; then
+    printf 'n/a'
+    exit 0
+fi
+[ "$pct" -gt 100 ] && pct=100
+
+# Nerd Font Font Awesome battery glyphs, by remaining charge.
+if [ "$pct" -ge 90 ]; then
+    icon='\357\211\200'      # nf-fa-battery_full
+elif [ "$pct" -ge 65 ]; then
+    icon='\357\211\201'      # nf-fa-battery_three_quarters
+elif [ "$pct" -ge 40 ]; then
+    icon='\357\211\202'      # nf-fa-battery_half
+elif [ "$pct" -ge 15 ]; then
+    icon='\357\211\203'      # nf-fa-battery_quarter
+else
+    icon='\357\211\204'      # nf-fa-battery_empty
+fi
+
+# Trailing bolt while the pack is charging.
+case $(cat "$batt/status" 2>/dev/null) in
+    Charging) bolt=' \357\203\247' ;;   # nf-fa-bolt
+    *) bolt= ;;
+esac
+
+printf ' %b %s%%%b' "$icon" "$pct" "$bolt"

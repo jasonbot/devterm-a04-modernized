@@ -213,11 +213,13 @@ The image ships `/etc/tmux.conf`:
 - prefix is `Ctrl-a` (like screen), mouse is enabled
 - `|` and `-` split the window vertically and horizontally
 - the status bar is bright white; the right side shows the live Wi-Fi
-  connection, the Tailscale IPv4 address (or login/off), and the time
+  connection, the Tailscale IPv4 address (or login/off), the battery charge
+  with a Nerd Font battery icon (plus a bolt while charging), and the time
 - clicking the status bar opens `nmtui-go` in a tmux popup via
   `sudo devterm-wifi`
 - `devterm-wifi status` and `devterm-tailscale-status` print the same
-  one-line summaries for scripts
+  one-line summaries for scripts; `devterm-battery` prints the battery
+  segment
 
 Useful checks:
 
@@ -225,6 +227,8 @@ Useful checks:
 tmux -V
 tmux show-options -g prefix
 /usr/local/bin/devterm-wifi status
+/usr/local/bin/devterm-battery
+cat /sys/class/power_supply/axp20x-battery/capacity
 ```
 
 ## Tailscale
