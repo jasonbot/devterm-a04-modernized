@@ -1,0 +1,16 @@
+#!/bin/sh
+# One-line Tailscale summary for the tmux status bar.
+# Prefer the operator-friendly `tailscale ip`; fall back to sudo -n until the
+# devterm-tailscale-operator oneshot has set the operator.
+set -u
+
+ip=$(/usr/bin/tailscale ip -4 2>/dev/null | head -n1)
+if [ -z "$ip" ]; then
+    ip=$(sudo -n /usr/bin/tailscale ip -4 2>/dev/null | head -n1)
+fi
+
+if [ -n "$ip" ]; then
+    printf 'TS: %s' "$ip"
+else
+    printf 'TS: off'
+fi

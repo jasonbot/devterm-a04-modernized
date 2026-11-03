@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 ./scripts/build-uboot.sh
 ./scripts/build-ly.sh
 ./scripts/build-chawan.sh
+./scripts/build-kmscon.sh
 ./scripts/build-rootfs.sh
 ./scripts/build-image.sh
 

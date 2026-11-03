@@ -9,7 +9,7 @@
 
   Login:        devterm / devterm   (root password is also devterm)
   Change them:  passwd ; sudo passwd root
-  Wi-Fi:        nmtui        or  devterm-wifi <SSID> <password>
+  Wi-Fi:        nmtui-go     or  devterm-wifi <SSID> <password>
   Browser:      devterm-kiosk https://example.com
   Fonts:        devterm-font  (list or switch console fonts)
   Printer:      devterm-printer "hello"   or  devterm-thermal-test

@@ -68,6 +68,7 @@ make fetch
 make uboot
 make ly
 make chawan     # Chawan
+make kmscon     # patched kmscon (A04 5px top guard)
 make rootfs
 make image
 make verify
@@ -82,7 +83,7 @@ make verify
 - ClockworkPi A04 kernel `devterm-kernel-current-cpi-a04_0.6_arm64.deb`
 - ClockworkPi audio/fan/gearbox/wiringPi/printer packages
 - Carbonyl `v0.0.3` arm64
-- Chawan `0.5.1` source
+- Chawan `0.5.1` source and the kmscon `10.0.4` source
 - Debian 13 arm64 packages during the rootfs stage
 
 `make uboot`:
@@ -105,6 +106,14 @@ make verify
   SIGILL on the device
 - writes `artifacts/ly/ly`
 
+`make kmscon`:
+
+- builds kmscon `10.0.4` for arm64 against `libtsm` from trixie-backports
+- applies `patches/kmscon-a04-pad.patch`: a 5px black guard at the top and
+  1px at the bottom of the rotated vertical axis, because the A04 panel wraps
+  its first active lines to the bottom
+- writes `artifacts/kmscon/usr`; `make rootfs` replaces the distro binary
+
 `make chawan`:
 
 - builds a Debian trixie arm64 container with the official Nim `2.2.12`
@@ -119,7 +128,8 @@ make verify
   dependencies and the rest of the package list in `scripts/build-rootfs.sh`
 - adds the Tailscale and Yazi apt repositories and installs `tailscale`
   and `yazi`
-- installs `kmscon` from `trixie-backports` and Ly as the tty1 login screen;
+- installs `kmscon` from `trixie-backports`, replaces it with the patched
+  A04 build, and sets up Ly as the tty1 login screen;
   kmscon uses its dumb-buffer drm2d backend, which the vendor sun4i-drm driver
   supports, with Ly on the kernel fbcon only as a failed-start fallback
 - runs `scripts/rootfs-install.sh` inside the target:
@@ -131,8 +141,8 @@ make verify
   - printer daemon extracted without CUPS
   - `/boot/Image`, `/boot/initrd.img`, `/boot/devterm-a04.dtb`
   - `/boot/extlinux/extlinux.conf` and `/boot/boot.scr`
-  - console font, NerdFonts, Carbonyl, Chawan, Tailscale, Yazi, services,
-    user and Wi-Fi config
+  - console font, NerdFonts, Carbonyl, Chawan, Tailscale, Yazi, nmtui-go,
+    services, user and Wi-Fi config
 - extracts the tar as the normal user and checks required files
 
 `make image`:

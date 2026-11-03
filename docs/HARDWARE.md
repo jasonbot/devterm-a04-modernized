@@ -35,10 +35,12 @@ thermal signal from `/tmp/devterm_adc` when available.
 ## Wi-Fi / Bluetooth
 
 - Broadcom BCM4345C5 on SDIO (`mmc1`)
-- `brcmfmac` + `brcmfmac43455-sdio.bin` from `firmware-brcm80211`
+- `brcmfmac`; the A04 reports as BCM43456, so the vendor `brcmfmac43456-sdio.bin`, `.clm_blob` and NVRAM are installed
+- the A04 NVRAM extracted from the vendor image, installed as
+  `brcmfmac43455-sdio.clockwork,devterm-a04.txt` and as the generic
+  `brcmfmac43455-sdio.txt`; the `macaddr=` line is removed so each device
+  generates its own address
 - `wireless-regdb`, NetworkManager, wpa_supplicant
-- board-specific NVRAM is the main bring-up variable; Debian's package
-  provides many board NVRAM files but not an A04-specific one
 - Bluetooth is not enabled by default; the same chip supports it, but the
   vendor image's Bluetooth firmware/NVRAM would need to be added
 

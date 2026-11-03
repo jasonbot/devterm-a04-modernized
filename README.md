@@ -74,6 +74,7 @@ make fetch     # download sources, packages, fonts and browsers
 make uboot     # build TF-A and U-Boot
 make ly        # build the Ly login screen
 make chawan    # build Chawan
+make kmscon    # kmscon with the A04 top guard band
 make rootfs    # build the Debian root filesystem
 make image     # make the card image
 make verify    # check the image

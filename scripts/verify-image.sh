@@ -24,7 +24,15 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /boot/extlinux/extlinux.conf /etc/vconsole.conf \
          /opt/carbonyl/carbonyl /usr/bin/kmscon /etc/kmscon/kmscon.conf \
          /usr/bin/cha /usr/bin/mancha /usr/libexec/chawan/cgi-bin/ssl \
+         /usr/share/doc/kmscon/A04-GUARD \
+         /usr/local/bin/nmtui-go \
          /usr/bin/tailscale /usr/sbin/tailscaled /usr/bin/yazi /etc/tmux.conf \
+         /usr/lib/firmware/brcm/brcmfmac43455-sdio.txt \
+         /usr/lib/firmware/brcm/brcmfmac43455-sdio.clockwork,devterm-a04.txt \
+         /usr/lib/firmware/brcm/brcmfmac43456-sdio.bin \
+         /usr/lib/firmware/brcm/brcmfmac43456-sdio.clm_blob \
+         /usr/lib/firmware/brcm/brcmfmac43456-sdio.txt \
+         /usr/lib/firmware/brcm/brcmfmac43456-sdio.clockwork,devterm-a04.txt \
          /usr/local/bin/devterm-wifi /usr/local/bin/devterm-tailscale-status \
          /usr/lib/systemd/system/devterm-tailscale-operator.service \
          /usr/bin/ly /etc/ly/config.lua /etc/pam.d/ly \
@@ -78,7 +86,13 @@ if command -v qemu-aarch64-static >/dev/null 2>&1 && [ -d "$ART/rootfs" ]; then
     qemu-aarch64-static -cpu cortex-a53 -L "$ART/rootfs" \
         "$tmp/yazi" --version >/dev/null 2>&1 || \
         die "Yazi does not run on Cortex-A53"
-    log "Ly runs on Cortex-A53; kmscon DRM 2D, Chawan and Yazi: ok"
+
+    debugfs -R "dump /usr/local/bin/nmtui-go $tmp/nmtui-go" "$part" >/dev/null 2>&1
+    chmod 755 "$tmp/nmtui-go"
+    qemu-aarch64-static -cpu cortex-a53 -L "$ART/rootfs" \
+        "$tmp/nmtui-go" --version >/dev/null 2>&1 || \
+        die "nmtui-go does not run on Cortex-A53"
+    log "Ly runs on Cortex-A53; kmscon DRM 2D, Chawan, Yazi and nmtui-go: ok"
 else
     warn "qemu-aarch64-static or artifacts/rootfs missing; skipping arm64 smoke test"
 fi

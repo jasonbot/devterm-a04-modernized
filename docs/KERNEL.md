@@ -133,6 +133,12 @@ to initialise (non-zero exit within 10 seconds); `fbcon=rotate:1` is used
 there.  The fallback 8x16 PSF2 font gives 160 columns by 30 rows.  `fbcon`
 uses `CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`, which is enabled.
 
+The A04 panel is known to wrap its first active line to the bottom of the
+display.  The image's kmscon is built from source with a 5px black guard at the top
+and 1px at the bottom of the rotated vertical axis
+(`patches/kmscon-a04-pad.patch`) to hide those lines.  The cost is a few
+pixels of usable height at the edges.
+
 Ly must be built with `-Dcpu=cortex_a53` (see `scripts/build-ly.sh`).  A
 native/container build targets newer ARMv8.1 features and dies with
 `Illegal instruction` on the A53 before it can draw anything.

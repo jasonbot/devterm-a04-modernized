@@ -1,0 +1,14 @@
+[Unit]
+Description=Let the devterm user query Tailscale status
+After=tailscaled.service
+Requires=tailscaled.service
+
+[Service]
+Type=oneshot
+# Ignore failures before the node is logged in; the setting is persisted in
+# the Tailscale profile once it succeeds.
+ExecStart=-/usr/bin/tailscale set --operator=devterm
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

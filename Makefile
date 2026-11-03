@@ -5,7 +5,7 @@ IMAGE := artifacts/devterm-a04.img
 COMPRESSED := $(IMAGE).zst
 DEVICE ?= /dev/sdX
 
-.PHONY: all image fetch uboot ly chawan rootfs verify flash clean distclean
+.PHONY: all image fetch uboot ly chawan kmscon rootfs verify flash clean distclean
 
 all: image
 
@@ -21,7 +21,10 @@ ly: fetch
 chawan: fetch
 	./scripts/build-chawan.sh
 
-rootfs: ly uboot chawan
+kmscon: fetch
+	./scripts/build-kmscon.sh
+
+rootfs: ly uboot chawan kmscon
 	./scripts/build-rootfs.sh
 
 image: rootfs
@@ -40,6 +43,6 @@ clean:
 distclean: clean
 	rm -rf artifacts/devterm-a04.img artifacts/devterm-a04.img.zst \
 	       artifacts/rootfs artifacts/rootfs.ext4 artifacts/export \
-	       artifacts/fonts artifacts/carbonyl artifacts/chawan \
+	       artifacts/fonts artifacts/carbonyl artifacts/chawan artifacts/kmscon artifacts/nmtui-go \
 	       artifacts/vendor artifacts/uboot \
 	       artifacts/src artifacts/SHA256SUMS artifacts/*.partition-table.txt

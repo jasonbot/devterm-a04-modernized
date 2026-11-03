@@ -8,6 +8,8 @@ UBOOT_VER=2025.01
 ATF_VER=2.11.0
 CARBONYL_VER=0.0.3
 CHAWAN_VER=0.5.1
+KMS_VER=10.0.4
+NMTUI_GO_VER=0.2.7
 VENDOR_BASE=https://raw.githubusercontent.com/clockworkpi/apt/main/debian
 
 download() {
@@ -58,6 +60,20 @@ log "Carbonyl: $(du -sh "$ART/carbonyl" | cut -f1)"
 # container build; caching the tarball here keeps it reproducible.
 download "https://git.sr.ht/~bptato/chawan/archive/v${CHAWAN_VER}.tar.gz" \
     "$ART/src/chawan-${CHAWAN_VER}.tar.gz"
+download "https://deb.debian.org/debian/pool/main/k/kmscon/kmscon_${KMS_VER}.orig.tar.gz" \
+    "$ART/src/kmscon-${KMS_VER}.tar.gz"
+
+if [ ! -x "$ART/nmtui-go/nmtui-go" ]; then
+    download "https://github.com/doeixd/nmtui-go/releases/download/v${NMTUI_GO_VER}/nmtui-go_${NMTUI_GO_VER}_linux_arm64.tar.gz" \
+        "$ART/src/nmtui-go-${NMTUI_GO_VER}.tar.gz"
+    need tar
+    rm -rf "$ART/src/nmtui-go-extract"
+    mkdir -p "$ART/src/nmtui-go-extract" "$ART/nmtui-go"
+    tar -xzf "$ART/src/nmtui-go-${NMTUI_GO_VER}.tar.gz" \
+        -C "$ART/src/nmtui-go-extract"
+    cp "$ART/src/nmtui-go-extract/nmtui-go" "$ART/nmtui-go/nmtui-go"
+    chmod 755 "$ART/nmtui-go/nmtui-go"
+fi
 
 # Nerd Fonts: keep every NerdFont file from the user's font directory and
 # install them system-wide later.  Hard links avoid duplicating ~0.6 GiB.

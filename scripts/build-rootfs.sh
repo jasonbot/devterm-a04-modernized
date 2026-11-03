@@ -10,6 +10,8 @@ need mkimage
     die "run scripts/fetch.sh first"
 [ -x "$ART/ly/ly" ] || die "run scripts/build-ly.sh first"
 [ -x "$ART/chawan/usr/bin/cha" ] || die "run scripts/build-chawan.sh first"
+[ -x "$ART/kmscon/usr/bin/kmscon" ] || die "run scripts/build-kmscon.sh first"
+[ -x "$ART/nmtui-go/nmtui-go" ] || die "run scripts/fetch.sh first (nmtui-go)"
 [ -s "$ART/uboot/u-boot-sunxi-with-spl.bin" ] || \
     die "run scripts/build-uboot.sh first"
 
@@ -56,6 +58,13 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          usr/local/share/fonts/nerd-fonts/PaperMonoNerdFont-Regular.otf \
          opt/carbonyl/carbonyl usr/local/bin/devterm-kiosk \
          usr/bin/cha usr/bin/mancha usr/libexec/chawan/cgi-bin/ssl \
+         usr/bin/kmscon usr/local/bin/nmtui-go \
+         usr/lib/firmware/brcm/brcmfmac43455-sdio.txt \
+         'usr/lib/firmware/brcm/brcmfmac43455-sdio.clockwork,devterm-a04.txt' \
+         usr/lib/firmware/brcm/brcmfmac43456-sdio.bin \
+         usr/lib/firmware/brcm/brcmfmac43456-sdio.clm_blob \
+         usr/lib/firmware/brcm/brcmfmac43456-sdio.txt \
+         'usr/lib/firmware/brcm/brcmfmac43456-sdio.clockwork,devterm-a04.txt' \
          usr/bin/tailscale usr/sbin/tailscaled usr/bin/yazi etc/tmux.conf \
          usr/local/bin/devterm-wifi usr/local/bin/devterm-tailscale-status \
          usr/lib/systemd/system/devterm-tailscale-operator.service \

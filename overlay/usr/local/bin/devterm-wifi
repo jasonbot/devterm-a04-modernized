@@ -1,5 +1,5 @@
 #!/bin/sh
-# Tiny wrapper around NetworkManager.  With no arguments it opens nmtui;
+# Tiny wrapper around NetworkManager.  With no arguments it opens nmtui-go;
 # "status" prints a one-line Wi-Fi summary for the tmux status bar.
 set -eu
 
@@ -27,6 +27,10 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 if [ "$#" -eq 0 ]; then
+    if [ -x /usr/local/bin/nmtui-go ]; then
+        export NMTUI_NO_UPDATE_CHECK=1
+        exec /usr/local/bin/nmtui-go
+    fi
     exec nmtui
 fi
 
@@ -35,7 +39,7 @@ if [ "$#" -eq 2 ]; then
 fi
 
 cat >&2 <<EOF
-usage: devterm-wifi                 # interactive nmtui
+usage: devterm-wifi                 # interactive nmtui-go (falls back to nmtui)
        devterm-wifi SSID PASSWORD
        devterm-wifi status          # one-line summary for tmux
 EOF

@@ -68,6 +68,9 @@ deb http://deb.debian.org/debian trixie-backports main
 EOF
 apt-get update -qq
 apt-get -y -o APT::Install-Recommends=false -t trixie-backports install kmscon
+# Replace the distro binary with the A04 build (5px top / 1px bottom guard).
+cp -a "$PAYLOAD"/kmscon/usr/. /usr/
+chmod 755 /usr/bin/kmscon
 cat >/etc/kmscon/kmscon.conf <<'EOF'
 # Paper Mono Nerd Font is installed system-wide by this image.
 font-engine=freetype
@@ -264,6 +267,8 @@ mkdir -p /usr/local/share/fonts/nerd-fonts
 cp -a "$PAYLOAD"/fonts/. /usr/local/share/fonts/nerd-fonts/
 chmod -R a+rX /usr/local/share/fonts
 fc-cache -f >/tmp/fontconfig.log 2>&1 || true
+
+install -m 755 "$PAYLOAD/nmtui-go/nmtui-go" /usr/local/bin/nmtui-go
 
 log "terminal browsers"
 # Carbonyl (Chromium-based) is kept as the compatibility browser.

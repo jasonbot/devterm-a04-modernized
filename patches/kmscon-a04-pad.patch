@@ -1,0 +1,33 @@
+--- a/src/render/bbulk.c
++++ b/src/render/bbulk.c
+@@ -124,7 +124,10 @@ static void compute_border(struct kmscon_text *txt)
+ 		bb->max_x = bb->off_x + txt->cols * FONT_WIDTH(txt);
+ 		bb->max_y = bb->off_y + txt->rows * FONT_HEIGHT(txt);
+ 	} else {
+-		bb->off_x = (bb->sw - txt->rows * FONT_HEIGHT(txt)) / 2;
++		/* A04 panel: the native x axis is the displayed vertical axis.
++		 * Leave a 5px black guard at the top; drm2d_display_swap()
++		 * clears the matching 1px at the bottom. */
++		bb->off_x = (bb->sw - txt->rows * FONT_HEIGHT(txt)) / 2 + 5;
+ 		bb->off_y = (bb->sh - txt->cols * FONT_WIDTH(txt)) / 2;
+ 		bb->max_x = bb->off_x + txt->rows * FONT_HEIGHT(txt);
+ 		bb->max_y = bb->off_y + txt->cols * FONT_WIDTH(txt);
+--- a/src/video/drm2d_video.c
++++ b/src/video/drm2d_video.c
+@@ -216,6 +216,16 @@ static int drm2d_display_swap(struct display *disp)
+ 	int rb;
+ 
+ 	rb = d2d->current_rb ^ 1;
++	/* A04: clear the last native column as the other half of the 1px
++	 * guard band.  After rotation this is the displayed top/bottom edge. */
++	if (disp->width > 1) {
++		struct drm2d_rb *r = &d2d->rb[rb];
++		unsigned int y;
++
++		for (y = 0; y < disp->height; ++y)
++			memset(r->map + y * r->stride + (disp->width - 1) * 4,
++			       0, 4);
++	}
+ 	ret = drm_display_swap(disp, d2d->rb[rb].id);
+ 	if (ret)
+ 		return ret;

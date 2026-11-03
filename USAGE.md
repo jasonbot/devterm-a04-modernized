@@ -54,13 +54,13 @@ The default `devterm` user has a normal home directory at `/home/devterm`.
 NetworkManager is enabled.  The interactive UI works on the console:
 
 ```sh
-sudo nmtui
+sudo nmtui-go            # nmtui-go UI (nmtui stays installed as a fallback)
 ```
 
 or:
 
 ```sh
-devterm-wifi                 # same as sudo nmtui
+devterm-wifi                 # same as sudo nmtui-go
 devterm-wifi "My SSID" "password"
 ```
 
@@ -94,7 +94,9 @@ needs; the H6 has no usable 3D driver in this kernel, so `hwaccel=off` and
 `drm=on` are set in `/etc/kmscon/kmscon.conf` and the wrapper also passes
 `--no-hwaccel`.
 
-`devterm-ly-console` falls back to **Ly on the kernel fbcon** (with the PSF2
+kmscon carries a 5px black guard at the top and 1px at the bottom of the
+rotated screen to hide the A04 panel's first-line wrap.  `devterm-ly-console` falls
+back to **Ly on the kernel fbcon** (with the PSF2
 font) only when kmscon fails to initialise: a non-zero exit within 10 seconds.
 A normal logout exits kmscon cleanly, systemd restarts it, and the next login
 screen is kmscon again.  If kmscon cannot use DRM, the fallback still gives a
@@ -198,7 +200,7 @@ The image ships `/etc/tmux.conf`:
 - `|` and `-` split the window vertically and horizontally
 - the status bar is bright white; the right side shows the live Wi-Fi
   connection, the Tailscale IPv4 address (or login/off), and the time
-- clicking the status bar opens `nmtui` in a tmux popup via
+- clicking the status bar opens `nmtui-go` in a tmux popup via
   `sudo devterm-wifi`
 - `devterm-wifi status` and `devterm-tailscale-status` print the same
   one-line summaries for scripts
