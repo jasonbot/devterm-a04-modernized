@@ -31,7 +31,8 @@ The A04 panel, backlight, sound codec and printer pins need the vendor Linux
 
 ## First boot
 
-Use a card **larger than 8 GiB**. A 16 GB or 32 GB card is a good choice.
+Use a card **larger than 4 GiB**. An 8 GB, 16 GB or 32 GB card is a good
+choice.
 
 1. Flash the image to the card.
 2. Put the card in the DevTerm.
@@ -91,7 +92,7 @@ artifacts/devterm-a04.img
 artifacts/SHA256SUMS
 ```
 
-The `.img.zst` file is about 700 MiB. The uncompressed image is 8 GiB.
+The `.img.zst` file is about 750 MiB. The uncompressed image is 4 GiB.
 
 ## Flash the card
 

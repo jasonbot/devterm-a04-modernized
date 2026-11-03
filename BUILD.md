@@ -15,7 +15,7 @@ No loop devices, mounts or `sudo` are required.
 - Linux x86_64 host (other architectures work if the cross toolchain is
   available; the scripts assume `gcc-aarch64-linux-gnu`)
 - rootless Podman with arm64 binfmt support
-- ~25 GB free disk (sources, rootfs, 8 GiB image and compressed copy)
+- ~20 GB free disk (sources, rootfs, 4 GiB image and compressed copy)
 - network access to Debian, GitHub, DENX and ClockworkPi
 - host tools: `curl`, `unzip`, `tar`, `fakeroot`, `e2fsprogs`, `sfdisk`,
   `zstd`, `mkimage`, Python 3 + Pillow + fontTools
@@ -147,7 +147,7 @@ make verify
 
 `make image`:
 
-- creates an 8 GiB MBR disk image
+- creates a 4 GiB MBR disk image
 - builds an ext4 filesystem labeled `devterm-root` with `fakeroot` +
   `mke2fs -d`
 - writes the filesystem at 2 MiB
@@ -207,8 +207,8 @@ zstd -dc artifacts/devterm-a04.img.zst |
 ```
 
 or decompress and use Etcher.  This is a live image, not an installer: the
-image is 8 GiB and the first boot expands the root partition to the full SD
-card via `devterm-growroot.service`.  Use a card larger than 8 GiB.
+image is 4 GiB and the first boot expands the root partition to the full SD
+card via `devterm-growroot.service`.  Use a card larger than 4 GiB.
 
 ## What is not verified here
 

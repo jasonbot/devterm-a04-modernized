@@ -69,7 +69,7 @@ nmcli device status
 
 ## SD card
 
-The image is an 8 GiB MBR disk.  `devterm-growroot.service` expands the last
+The image is a 4 GiB MBR disk.  `devterm-growroot.service` expands the last
 partition to the SD card size on first boot.  Use a good-quality card; sunxi
 SPL is sensitive to some cheap or counterfeit cards.
 

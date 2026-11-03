@@ -5,7 +5,7 @@
 This is a live image, not an installer.  Write it to the TF/microSD card once,
 insert it, and boot.  There is no install wizard.  On first boot,
 `devterm-growroot.service` grows the root partition and ext4 filesystem to the
-full card size.  Use a card larger than 8 GiB; 16 GB or more is recommended.
+full card size.  Use a card larger than 4 GiB; 8 GB or more is recommended.
 
 ## Flash and first boot
 

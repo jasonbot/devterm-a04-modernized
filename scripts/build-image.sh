@@ -15,7 +15,7 @@ need zstd
 [ -d "$ART/rootfs" ] || die "run scripts/build-rootfs.sh first"
 [ -s "$ART/uboot/u-boot-sunxi-with-spl.bin" ] || die "run scripts/build-uboot.sh first"
 
-IMG_BYTES=$((8 * 1024 * 1024 * 1024))
+IMG_BYTES=$((4 * 1024 * 1024 * 1024))
 PART_START=4096
 PART_SECTORS=$(( IMG_BYTES / 512 - PART_START ))
 FS_BYTES=$(( PART_SECTORS * 512 ))
@@ -24,7 +24,7 @@ EXT4="$ART/rootfs.ext4"
 
 rootfs_bytes=$(du -sb "$ART/rootfs" | cut -f1)
 if [ "$rootfs_bytes" -ge $((FS_BYTES - 512 * 1024 * 1024)) ]; then
-    die "rootfs ($rootfs_bytes bytes) is too large for the 8 GiB image"
+    die "rootfs ($rootfs_bytes bytes) is too large for the 4 GiB image"
 fi
 
 dev_uid=$(awk -F: '$1 == "devterm" {print $3}' "$ART/rootfs/etc/passwd")
