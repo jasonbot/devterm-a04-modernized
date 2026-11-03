@@ -68,7 +68,7 @@ deb http://deb.debian.org/debian trixie-backports main
 EOF
 apt-get update -qq
 apt-get -y -o APT::Install-Recommends=false -t trixie-backports install kmscon
-# Replace the distro binary with the A04 build (5px top / 1px bottom guard).
+# Replace the distro binary with the A04 build (5px top guard).
 cp -a "$PAYLOAD"/kmscon/usr/. /usr/
 chmod 755 /usr/bin/kmscon
 cat >/etc/kmscon/kmscon.conf <<'EOF'

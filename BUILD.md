@@ -68,7 +68,7 @@ make fetch
 make uboot
 make ly
 make chawan     # Chawan
-make kmscon     # patched kmscon (A04 5px top guard)
+make kmscon     # patched kmscon (A04 top guard)
 make rootfs
 make image
 make verify
@@ -109,9 +109,9 @@ make verify
 `make kmscon`:
 
 - builds kmscon `10.0.4` for arm64 against `libtsm` from trixie-backports
-- applies `patches/kmscon-a04-pad.patch`: a 5px black guard at the top and
-  1px at the bottom of the rotated vertical axis, because the A04 panel wraps
-  its first active lines to the bottom
+- applies `patches/kmscon-a04-pad.patch`: a 5px black guard at the top of
+  the rotated vertical axis, because the A04 panel wraps its first active
+  lines to the bottom; the bottom 5px of the source are clipped
 - writes `artifacts/kmscon/usr`; `make rootfs` replaces the distro binary
 
 `make chawan`:

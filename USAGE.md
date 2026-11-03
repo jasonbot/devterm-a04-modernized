@@ -94,8 +94,8 @@ needs; the H6 has no usable 3D driver in this kernel, so `hwaccel=off` and
 `drm=on` are set in `/etc/kmscon/kmscon.conf` and the wrapper also passes
 `--no-hwaccel`.
 
-kmscon carries a 5px black guard at the top and 1px at the bottom of the
-rotated screen to hide the A04 panel's first-line wrap.  `devterm-ly-console` falls
+kmscon carries a 5px black guard at the top of the rotated screen to hide
+the A04 panel's first-line wrap; the bottom 5px of the source are clipped.  `devterm-ly-console` falls
 back to **Ly on the kernel fbcon** (with the PSF2
 font) only when kmscon fails to initialise: a non-zero exit within 10 seconds.
 A normal logout exits kmscon cleanly, systemd restarts it, and the next login

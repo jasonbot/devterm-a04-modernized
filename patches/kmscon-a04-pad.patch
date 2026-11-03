@@ -1,33 +1,72 @@
---- a/src/render/bbulk.c
-+++ b/src/render/bbulk.c
-@@ -124,7 +124,10 @@ static void compute_border(struct kmscon_text *txt)
- 		bb->max_x = bb->off_x + txt->cols * FONT_WIDTH(txt);
- 		bb->max_y = bb->off_y + txt->rows * FONT_HEIGHT(txt);
- 	} else {
--		bb->off_x = (bb->sw - txt->rows * FONT_HEIGHT(txt)) / 2;
-+		/* A04 panel: the native x axis is the displayed vertical axis.
-+		 * Leave a 5px black guard at the top; drm2d_display_swap()
-+		 * clears the matching 1px at the bottom. */
-+		bb->off_x = (bb->sw - txt->rows * FONT_HEIGHT(txt)) / 2 + 5;
- 		bb->off_y = (bb->sh - txt->cols * FONT_WIDTH(txt)) / 2;
- 		bb->max_x = bb->off_x + txt->rows * FONT_HEIGHT(txt);
- 		bb->max_y = bb->off_y + txt->cols * FONT_WIDTH(txt);
 --- a/src/video/drm2d_video.c
 +++ b/src/video/drm2d_video.c
-@@ -216,6 +216,16 @@ static int drm2d_display_swap(struct display *disp)
- 	int rb;
+@@ -48,6 +48,12 @@
  
- 	rb = d2d->current_rb ^ 1;
-+	/* A04: clear the last native column as the other half of the 1px
-+	 * guard band.  After rotation this is the displayed top/bottom edge. */
-+	if (disp->width > 1) {
-+		struct drm2d_rb *r = &d2d->rb[rb];
-+		unsigned int y;
+ #define LOG_SUBSYSTEM "video_drm2d"
+ 
++/* The A04 panel wraps its first display line to the bottom.  The display's
++ * top/bottom axis is the framebuffer's native x axis after rotation.  Make
++ * the framebuffer A04_SRC_X pixels wider and scan from column A04_SRC_X, so
++ * the last A04_SRC_X columns are a black top guard band. */
++#define A04_SRC_X 5
 +
-+		for (y = 0; y < disp->height; ++y)
-+			memset(r->map + y * r->stride + (disp->width - 1) * 4,
-+			       0, 4);
-+	}
- 	ret = drm_display_swap(disp, d2d->rb[rb].id);
+ static int drm_addfb2(int fd, uint32_t width, uint32_t height, struct drm2d_rb *rb)
+ {
+ 	uint32_t handles[4] = {rb->handle, 0, 0, 0};
+@@ -129,11 +135,13 @@
+ 
+ 	d2d->current_rb = 0;
+ 
+-	ret = init_rb(vdrm->fd, disp->width, disp->height, &d2d->rb[0]);
++	ret = init_rb(vdrm->fd, disp->width + d2d->ddrm.src_x, disp->height,
++		      &d2d->rb[0]);
  	if (ret)
  		return ret;
+ 
+-	ret = init_rb(vdrm->fd, disp->width, disp->height, &d2d->rb[1]);
++	ret = init_rb(vdrm->fd, disp->width + d2d->ddrm.src_x, disp->height,
++		      &d2d->rb[1]);
+ 	if (ret)
+ 		goto free_rb0;
+ 	return 0;
+@@ -196,6 +204,7 @@
+ 
+ 	d2d->ddrm.prepare_modeset = display_prepare_modeset;
+ 	d2d->ddrm.done_modeset = display_done_modeset;
++	d2d->ddrm.src_x = A04_SRC_X;
+ 
+ 	return 0;
+ }
+--- a/src/video/drm_shared_internal.h
++++ b/src/video/drm_shared_internal.h
+@@ -65,6 +65,9 @@
+ };
+ 
+ struct drm_display {
++	/* First column of the framebuffer to scan out.  Non-zero only for the
++	 * A04 padded drm2d framebuffer. */
++	uint32_t src_x;
+ 	struct drm_object connector;
+ 	struct drm_object crtc;
+ 	struct drm_object plane;
+--- a/src/video/drm_shared.c
++++ b/src/video/drm_shared.c
+@@ -594,7 +594,7 @@
+ 		return -1;
+ 	if (set_drm_object_property(req, plane, "CRTC_ID", ddrm->crtc.id) < 0)
+ 		return -1;
+-	if (set_drm_object_property(req, plane, "SRC_X", 0) < 0)
++	if (set_drm_object_property(req, plane, "SRC_X", ddrm->src_x << 16) < 0)
+ 		return -1;
+ 	if (set_drm_object_property(req, plane, "SRC_Y", 0) < 0)
+ 		return -1;
+@@ -647,7 +647,8 @@
+ 						    (uint64_t)cursor->height << 16) < 0)
+ 				return -1;
+ 			if (set_drm_object_property(req, cp, "CRTC_X",
+-						    cursor->off_x + cursor->x - cursor->hot_x) < 0)
++						    cursor->off_x + cursor->x - cursor->hot_x -
++							    (int32_t)ddrm->src_x) < 0)
+ 				return -1;
+ 			if (set_drm_object_property(req, cp, "CRTC_Y",
+ 						    cursor->off_y + cursor->y - cursor->hot_y) < 0)
