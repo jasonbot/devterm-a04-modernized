@@ -58,6 +58,20 @@ echo 'devterm ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/010-devterm
 chmod 440 /etc/sudoers.d/010-devterm
 chown -R devterm:devterm /home/devterm
 
+log "starship prompt"
+install -d -o devterm -g devterm /home/devterm/.config
+install -m 644 -o devterm -g devterm /etc/starship.toml /home/devterm/.config/starship.toml
+if ! grep -q 'starship init bash' /etc/bash.bashrc 2>/dev/null; then
+    cat >>/etc/bash.bashrc <<'EOF'
+
+# Starship prompt for interactive non-login shells.
+if [ -n "${BASH_VERSION-}" ] && command -v starship >/dev/null 2>&1 && \
+   [ -z "${STARSHIP_SHELL-}" ]; then
+    eval "$(starship init bash)"
+fi
+EOF
+fi
+
 log "kmscon console"
 # kmscon is the userspace DRM console requested for this image.  It lives in
 # trixie-backports and uses the drm2d backend, which only needs DRM dumb
@@ -68,7 +82,7 @@ deb http://deb.debian.org/debian trixie-backports main
 EOF
 apt-get update -qq
 apt-get -y -o APT::Install-Recommends=false -t trixie-backports install kmscon
-# Replace the distro binary with the A04 build (5px top guard).
+# Replace the distro binary with the A04 build (centered 8px guard).
 cp -a "$PAYLOAD"/kmscon/usr/. /usr/
 chmod 755 /usr/bin/kmscon
 cat >/etc/kmscon/kmscon.conf <<'EOF'

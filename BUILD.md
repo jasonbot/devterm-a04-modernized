@@ -68,7 +68,7 @@ make fetch
 make uboot
 make ly
 make chawan     # Chawan
-make kmscon     # patched kmscon (A04 top guard)
+make kmscon     # patched kmscon (A04 guard band)
 make rootfs
 make image
 make verify
@@ -109,9 +109,9 @@ make verify
 `make kmscon`:
 
 - builds kmscon `10.0.4` for arm64 against `libtsm` from trixie-backports
-- applies `patches/kmscon-a04-pad.patch`: a 5px black guard at the top of
-  the rotated vertical axis, because the A04 panel wraps its first active
-  lines to the bottom; the bottom 5px of the source are clipped
+- applies `patches/kmscon-a04-pad.patch`: an 8px total guard band split
+  between the rotated top and bottom edges, because the A04 panel wraps its
+  first active lines to the bottom; kmscon drops one text row to make room
 - writes `artifacts/kmscon/usr`; `make rootfs` replaces the distro binary
 
 `make chawan`:
@@ -142,7 +142,7 @@ make verify
   - `/boot/Image`, `/boot/initrd.img`, `/boot/devterm-a04.dtb`
   - `/boot/extlinux/extlinux.conf` and `/boot/boot.scr`
   - console font, NerdFonts, Carbonyl, Chawan, Tailscale, Yazi, nmtui-go,
-    services, user and Wi-Fi config
+    Starship prompt, services, user and Wi-Fi config
 - extracts the tar as the normal user and checks required files
 
 `make image`:

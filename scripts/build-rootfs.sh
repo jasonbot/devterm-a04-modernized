@@ -28,7 +28,7 @@ mkimage -A arm64 -O linux -T script -C none -n "DevTerm A04 boot" \
 chmod 777 "$ART/export"
 rm -f "$ART/export/rootfs.tar"
 
-packages="systemd-sysv,systemd-timesyncd,udev,dbus,initramfs-tools,kmod,e2fsprogs,fdisk,cloud-guest-utils,zram-tools,locales,tzdata,console-setup,keyboard-configuration,kbd,network-manager,wpasupplicant,iw,wireless-tools,rfkill,wireless-regdb,firmware-brcm80211,openssh-server,sudo,libpam-systemd,python3,socat,fonts-noto-cjk,fontconfig,fonts-dejavu-core,libfreetype6,libnss3,libnspr4,libexpat1,libasound2t64,libgbm1,libdrm2,libxkbcommon0,libstdc++6,zlib1g,libssh2-1t64,libbrotli1,libssl3t64,w3m,ca-certificates,curl,wget,less,nano,git,rsync,unzip,xz-utils,zstd,bzip2,alsa-utils,usbutils,pciutils,procps,psmisc,iproute2,iputils-ping,net-tools,htop,tmux,brightnessctl"
+packages="systemd-sysv,systemd-timesyncd,udev,dbus,initramfs-tools,kmod,e2fsprogs,fdisk,cloud-guest-utils,zram-tools,locales,tzdata,console-setup,keyboard-configuration,kbd,network-manager,wpasupplicant,iw,wireless-tools,rfkill,wireless-regdb,firmware-brcm80211,openssh-server,sudo,libpam-systemd,python3,socat,fonts-noto-cjk,fontconfig,fonts-dejavu-core,libfreetype6,libnss3,libnspr4,libexpat1,libasound2t64,libgbm1,libdrm2,libxkbcommon0,libstdc++6,zlib1g,libssh2-1t64,libbrotli1,libssl3t64,w3m,ca-certificates,curl,wget,less,nano,git,rsync,unzip,xz-utils,zstd,bzip2,alsa-utils,usbutils,pciutils,procps,psmisc,iproute2,iputils-ping,net-tools,htop,tmux,starship,brightnessctl"
 
 log "building Debian trixie arm64 rootfs (this takes a few minutes)"
 podman run --rm --arch arm64 --network=host \
@@ -67,6 +67,8 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          'usr/lib/firmware/brcm/brcmfmac43456-sdio.clockwork,devterm-a04.txt' \
          usr/bin/tailscale usr/sbin/tailscaled usr/bin/yazi etc/tmux.conf \
          usr/local/bin/devterm-wifi usr/local/bin/devterm-tailscale-status \
+         usr/bin/starship etc/starship.toml etc/profile.d/starship.sh \
+         etc/skel/.config/starship.toml home/devterm/.config/starship.toml \
          usr/lib/systemd/system/devterm-tailscale-operator.service \
          usr/bin/ly etc/ly/config.lua \
          usr/lib/systemd/system/ly-kmsconvt@.service \

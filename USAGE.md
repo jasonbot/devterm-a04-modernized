@@ -94,8 +94,10 @@ needs; the H6 has no usable 3D driver in this kernel, so `hwaccel=off` and
 `drm=on` are set in `/etc/kmscon/kmscon.conf` and the wrapper also passes
 `--no-hwaccel`.
 
-kmscon carries a 5px black guard at the top of the rotated screen to hide
-the A04 panel's first-line wrap; the bottom 5px of the source are clipped.  `devterm-ly-console` falls
+kmscon carries an 8px black guard band split between the top and bottom of
+the rotated screen to hide the A04 panel's first-line wrap.  It drops one
+text row to make room, so at 8x16 the terminal has 29 rows and every row is
+fully visible.  `devterm-ly-console` falls
 back to **Ly on the kernel fbcon** (with the PSF2
 font) only when kmscon fails to initialise: a non-zero exit within 10 seconds.
 A normal logout exits kmscon cleanly, systemd restarts it, and the next login
@@ -172,6 +174,18 @@ TERM=xterm-256color /opt/carbonyl/carbonyl --version
 cha -h
 ldd /opt/carbonyl/carbonyl
 ```
+
+## Shell prompt: Starship
+
+Starship is the default interactive Bash prompt.  The configuration is
+installed at `/etc/starship.toml`; `/etc/skel/.config/starship.toml`, the
+`devterm` user and root use it.  The prompt uses Nerd Font/Powerline glyphs;
+Paper Mono Nerd Font is the default console font and kmscon's freetype
+backend also falls back to Debian's other fonts for the few non-Nerd symbols
+in the config.
+
+Run `starship --version`, or edit `~/.config/starship.toml` for a per-user
+config.
 
 ## Yazi file manager
 

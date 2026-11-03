@@ -13,6 +13,8 @@ the system makes the root filesystem use the rest of the card.
 - Debian 13 (`trixie`) for 64-bit ARM.
 - A text console with **kmscon**.
 - **Ly**, a text login screen, running inside kmscon.
+- **Starship** as the default prompt, using the image's Paper Mono Nerd
+  Font/Powerline glyphs.
 - **Paper Mono Nerd Font** at a 16 px / 8x16 cell size as the console font.
 - Every NerdFont from your font folder, installed for all programs.
 - Two text-mode browsers, both usable without X or Wayland:
@@ -75,7 +77,7 @@ make fetch     # download sources, packages, fonts and browsers
 make uboot     # build TF-A and U-Boot
 make ly        # build the Ly login screen
 make chawan    # build Chawan
-make kmscon    # kmscon with the A04 top guard band
+make kmscon    # kmscon with the A04 guard band
 make rootfs    # build the Debian root filesystem
 make image     # make the card image
 make verify    # check the image

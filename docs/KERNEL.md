@@ -134,10 +134,10 @@ there.  The fallback 8x16 PSF2 font gives 160 columns by 30 rows.  `fbcon`
 uses `CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`, which is enabled.
 
 The A04 panel is known to wrap its first active line to the bottom of the
-display.  The image's kmscon is built from source with a 5px black guard at the top
-of the rotated vertical axis (`patches/kmscon-a04-pad.patch`) to hide those
-lines.  It does this by making the framebuffer 5px wider and scanning from
-native x=5; the bottom 5px of the source are clipped.
+display.  The image's kmscon is built from source with an 8px guard band split
+between the rotated top and bottom edges (`patches/kmscon-a04-pad.patch`)
+to hide those lines.  It drops one text row so the remaining rows are fully
+visible; at 8x16 this gives 29 rows with 8px black at each edge.
 
 Ly must be built with `-Dcpu=cortex_a53` (see `scripts/build-ly.sh`).  A
 native/container build targets newer ARMv8.1 features and dies with
