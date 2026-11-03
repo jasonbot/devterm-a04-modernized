@@ -212,9 +212,12 @@ The image ships `/etc/tmux.conf`:
 
 - prefix is `Ctrl-a` (like screen), mouse is enabled
 - `|` and `-` split the window vertically and horizontally
-- the status bar is bright white; the right side shows the live Wi-Fi
-  connection, the Tailscale IPv4 address (or login/off), the battery charge
-  with a Nerd Font battery icon (plus a bolt while charging), and the time
+- the status bar is bright white; the right side shows the Wi-Fi network with
+  a Nerd Font signal-strength icon (one to four bars) and its link quality,
+  the Tailscale IPv4 address (or login/off), the battery charge with a Nerd
+  Font battery icon (plus a bolt while charging), and the time.  The console
+  is 60 columns wide, so tmux drops the left end of the right side when it
+  does not fit: long SSIDs are cut before the icons, the battery and the time
 - clicking the status bar opens `nmtui-go` in a tmux popup via
   `sudo devterm-wifi`
 - `devterm-wifi status` and `devterm-tailscale-status` print the same

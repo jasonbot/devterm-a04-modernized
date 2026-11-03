@@ -4,21 +4,49 @@
 set -eu
 
 if [ "${1:-}" = status ]; then
+    # Nerd Font Material Design Wi-Fi icons: the strength levels are one to
+    # four bars, wifi_off means the radio is disabled and wifi_strength_off
+    # means no network is connected.
+    wifi_off='\363\260\226\252'
+    strength_off='\363\260\244\255'
+
     if [ "$(nmcli radio wifi 2>/dev/null || echo disabled)" = disabled ]; then
-        printf 'Wi-Fi: off'
+        printf ' %b off' "$wifi_off"
         exit 0
     fi
 
     active=$(nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi 2>/dev/null | \
         awk -F: '$1 == "yes" { print $2 ":" $3; exit }')
     if [ -z "$active" ]; then
-        printf 'Wi-Fi: disconnected'
+        printf ' %b disconnected' "$strength_off"
         exit 0
     fi
 
     ssid=${active%:*}
     signal=${active##*:}
-    printf 'Wi-Fi: %s %s%%' "$ssid" "$signal"
+    case $signal in
+        ''|*[!0-9]*)
+            icon=$strength_off
+            signal='?' ;;
+        *)
+            if [ "$signal" -ge 75 ]; then
+                icon='\363\260\244\250'      # nf-md-wifi_strength_4
+            elif [ "$signal" -ge 50 ]; then
+                icon='\363\260\244\245'      # nf-md-wifi_strength_3
+            elif [ "$signal" -ge 25 ]; then
+                icon='\363\260\244\242'      # nf-md-wifi_strength_2
+            else
+                icon='\363\260\244\237'      # nf-md-wifi_strength_1
+            fi ;;
+    esac
+
+    # The SSID comes first: tmux drops the left end of status-right when the
+    # bar is too narrow, and the icon and percentage matter more than the name.
+    if [ -n "$ssid" ]; then
+        printf ' %s %b %s%%' "$ssid" "$icon" "$signal"
+    else
+        printf ' %b %s%%' "$icon" "$signal"
+    fi
     exit 0
 fi
 
