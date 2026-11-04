@@ -28,6 +28,7 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /usr/local/bin/nmtui-go \
          /usr/bin/starship /etc/starship.toml /etc/profile.d/starship.sh \
          /etc/skel/.config/starship.toml /home/devterm/.config/starship.toml \
+         /etc/profile.d/tmux-login.sh \
          /usr/bin/tailscale /usr/sbin/tailscaled /usr/bin/yazi /etc/tmux.conf \
          /usr/lib/firmware/brcm/brcmfmac43455-sdio.txt \
          /usr/lib/firmware/brcm/brcmfmac43455-sdio.clockwork,devterm-a04.txt \
@@ -61,6 +62,14 @@ debugfs -R 'cat /etc/vconsole.conf' "$part" 2>/dev/null | \
     grep -q '^FONT=PaperMonoNerdFont-8x16$' || die "default console font is not 8x16"
 debugfs -R 'cat /etc/tmux.conf' "$part" 2>/dev/null | \
     grep -q 'MouseDown1Status' || die "tmux Wi-Fi status bind is missing"
+debugfs -R 'cat /etc/profile.d/tmux-login.sh' "$part" 2>/dev/null | \
+    grep -q 'tmux new-session -A -s login' || die "tmux login attach is missing"
+debugfs -R 'cat /etc/systemd/logind.conf.d/devterm.conf' "$part" 2>/dev/null | \
+    grep -q '^HandlePowerKey=suspend$' || die "power key does not suspend"
+debugfs -R 'cat /etc/ly/config.lua' "$part" 2>/dev/null | \
+    grep -q 'animation = "matrix"' || die "Ly matrix theme is missing"
+debugfs -R 'cat /boot/extlinux/extlinux.conf' "$part" 2>/dev/null | \
+    grep -q 'mem_sleep_default=s2idle' || die "s2idle kernel parameter is missing"
 debugfs -R 'cat /etc/tmux.conf' "$part" 2>/dev/null | \
     grep -q 'devterm-battery' || die "tmux battery status is missing"
 

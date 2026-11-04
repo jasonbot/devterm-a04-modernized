@@ -49,6 +49,9 @@ if [ -n "$LY_COMMIT" ]; then
     git -C "$LY_SRC" fetch --depth 1 origin "$LY_COMMIT"
     git -C "$LY_SRC" checkout --detach "$LY_COMMIT"
 fi
+if ! grep -q "kmscon's PTY does not implement" "$LY_SRC/ly-core/src/interop.zig"; then
+    patch -d "$LY_SRC" -p1 <"$ROOT/patches/ly-lock-state.patch"
+fi
 
 log "building Ly for arm64 (first build can take several minutes)"
 podman run --rm --arch arm64 --userns=keep-id --user "$(id -u):$(id -g)" \

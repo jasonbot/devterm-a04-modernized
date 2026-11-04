@@ -175,6 +175,13 @@ cha -h
 ldd /opt/carbonyl/carbonyl
 ```
 
+## Ly login screen
+
+Ly is built from source with the kmscon lock-LED error suppressed (kmscon's
+PTY does not implement `KDGKBLED`).  The default theme uses a green Matrix
+rain, a large clock and a dark box titled "DevTerm A04"; edit
+`/etc/ly/config.lua` and restart `ly-kmsconvt@tty1` to change it.
+
 ## Shell prompt: Starship
 
 Starship is the default interactive Bash prompt.  The configuration is
@@ -220,6 +227,8 @@ The image ships `/etc/tmux.conf`:
   does not fit: long SSIDs are cut before the icons, the battery and the time
 - clicking the status bar opens `nmtui-go` in a tmux popup via
   `sudo devterm-wifi`
+- every interactive login attaches to the persistent tmux session `login`;
+  detaching and logging in again reattaches the same session
 - `devterm-wifi status` and `devterm-tailscale-status` print the same
   one-line summaries for scripts; `devterm-battery` prints the battery
   segment
@@ -233,6 +242,14 @@ tmux show-options -g prefix
 /usr/local/bin/devterm-battery
 cat /sys/class/power_supply/axp20x-battery/capacity
 ```
+
+## Power button and suspend
+
+A short power-button press suspends the machine through systemd-logind; a long
+press powers off.  The kernel command line selects `s2idle` and the suspend
+targets are not masked.  If suspend/resume is unreliable on your A04 revision,
+use the long press or `sudo poweroff`; deep suspend would require the Crust
+SCP firmware, which this image does not ship.
 
 ## Tailscale
 

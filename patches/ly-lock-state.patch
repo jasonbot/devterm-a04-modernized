@@ -1,0 +1,18 @@
+--- a/ly-core/src/interop.zig
++++ b/ly-core/src/interop.zig
+@@ -355,7 +355,14 @@
+ } {
+     var led: platform_struct.LedState = undefined;
+     const status = std.c.ioctl(std.posix.STDIN_FILENO, platform_struct.get_led_state, &led);
+-    if (status != 0) return error.FailedToGetLockState;
++    if (status != 0) {
++        // kmscon's PTY does not implement KDGKBLED.  Treat that as "no lock
++        // LEDs" instead of surfacing a red login-screen error.
++        return .{
++            .numlock = false,
++            .capslock = false,
++        };
++    }
+ 
+     return .{
+         .numlock = (led & platform_struct.numlock_led) != 0,

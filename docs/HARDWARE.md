@@ -62,6 +62,9 @@ nmcli device status
 
 ## Power and recovery
 
+- power button: short press suspend (s2idle), long press poweroff
+- deep suspend needs Crust/SCP, which this image does not ship
+
 - AXP221 PMIC, H6
 - UART0 is the debug console: **115200 8N1**
 - U-Boot does not initialize the panel; serial is the reliable early console

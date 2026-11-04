@@ -75,8 +75,9 @@ The optional H6 SCP firmware is disabled by changing U-Boot's
 `SUNXI_SCP_BASE` default to `0x0` for `MACH_SUN50I_H6`.  The SCP (Crust)
 firmware is only needed for system suspend; it would require an OR1K
 cross-toolchain and a compatible firmware blob.  BL31 provides PSCI, and the
-A04 image does not suspend.  If suspend is added later, build Crust for H6 and
-re-enable the SCP entry.
+A04 image does not suspend.  The image enables the power-key suspend path through logind and
+`mem_sleep_default=s2idle`; deep suspend/resume may still need Crust.  If
+full suspend is wanted later, build Crust for H6 and re-enable the SCP entry.
 
 U-Boot is written at **8 KiB**, the H6 BootROM's SPL offset.  The MBR
 partition starts at 2 MiB, so SPL/U-Boot and the filesystem never overlap.
@@ -93,7 +94,8 @@ LABEL devterm
   FDT /boot/devterm-a04.dtb
   INITRD /boot/initrd.img
   APPEND root=LABEL=devterm-root rootfstype=ext4 rootwait rw \
-         console=ttyS0,115200 console=tty0 fbcon=rotate:1 loglevel=4
+         console=ttyS0,115200 console=tty0 fbcon=rotate:1 loglevel=4 \
+         mem_sleep_default=s2idle
 ```
 
 A `/boot/boot.scr` fallback exists for diagnostics.  There is no separate FAT

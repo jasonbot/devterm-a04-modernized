@@ -43,10 +43,10 @@ ly = {
     -- gameoflife -> John Conway's Game of Life
     -- dur -> .dur file format (https://github.com/cmang/durdraw/tree/master)
     -- lua -> user-made animation written in LuaJIT
-    animation = "none",
+    animation = "matrix",
 
     -- Delay between each animation frame in milliseconds
-    animation_frame_delay = 5,
+    animation_frame_delay = 40,
 
     -- Stop the animation after some time
     -- 0 -> Run forever
@@ -58,7 +58,7 @@ ly = {
     -- codepoint (for example 0x2022 for a bullet point)
     -- If null, the password will be hidden
     -- Note: you can use a # by escaping it like so: \#
-    asterisk = '*',
+    asterisk = "•",
 
     -- The number of failed authentications before a special animation is played... ;)
     -- If set to 0, the animation will never be played
@@ -95,13 +95,13 @@ ly = {
     battery_id = nil,
 
     -- Background color id
-    bg = 0x00000000,
+    bg = 0x00241F31,
 
     -- Change the state and language of the big clock
     -- none -> Disabled (default)
     -- en   -> English
     -- fa   -> Farsi
-    bigclock = "none",
+    bigclock = "en",
 
     -- Set bigclock to 12-hour notation.
     bigclock_12hr = false,
@@ -114,7 +114,7 @@ ly = {
     blank_box = true,
 
     -- Border foreground color id
-    border_fg = 0x00FFFFFF,
+    border_fg = 0x005E5C64,
 
     -- Relative horizontal position from the end of the screen
     -- default: 0.5
@@ -126,7 +126,7 @@ ly = {
 
     -- Title to show at the top of the main box
     -- If set to null, none will be shown
-    box_title = nil,
+    box_title = "DevTerm A04",
 
     -- Brightness decrease command
     brightness_down_cmd = "/usr/bin/brightnessctl -q -n s 10%-",
@@ -147,13 +147,13 @@ ly = {
 
     -- Format string for clock in top right corner (see strftime specification). Example: %c
     -- If null, the clock won't be shown
-    clock = nil,
+    clock = "%H:%M",
 
     -- CMatrix animation foreground color id
-    cmatrix_fg = 0x0000FF00,
+    cmatrix_fg = 0x002EC27E,
 
     -- CMatrix animation character string head color id
-    cmatrix_head_col = 0x01FFFFFF,
+    cmatrix_head_col = 0x01F6F5F4,
 
     -- CMatrix animation minimum codepoint. It uses a 16-bit integer
     -- For Japanese characters for example, you can use 0x3000 here
@@ -204,10 +204,10 @@ ly = {
     corner_bottom_right = "labels",
 
     -- Top left
-    corner_top_left = "shutdown,restart,britup,britdown,password battery binds",
+    corner_top_left = "shutdown,restart,britup,britdown,password",
 
     -- Top right
-    corner_top_right = "clock numlock,capslock",
+    corner_top_right = "clock",
 
     -- For custom binds: the horizontal limit in characters for each
     -- line of custom binds before moving on to the next.
@@ -270,7 +270,7 @@ ly = {
     faillock_tally_dir = "/var/run/faillock",
 
     -- Foreground color id
-    fg = 0x00FFFFFF,
+    fg = 0x00F6F5F4,
 
     -- Render true colors (if supported)
     -- If false, output will be in eight-color mode
@@ -345,7 +345,7 @@ ly = {
     initial_info_text = nil,
 
     -- Input boxes length
-    input_len = 34,
+    input_len = 30,
 
     -- Active language
     -- Available languages are found in /etc/ly/lang/
@@ -375,10 +375,10 @@ ly = {
     ly_log = "/var/log/ly.log",
 
     -- Main box horizontal margin
-    margin_box_h = 2,
+    margin_box_h = 4,
 
     -- Main box vertical margin
-    margin_box_v = 1,
+    margin_box_v = 2,
 
     -- Set numlock on/off at startup
     numlock = false,

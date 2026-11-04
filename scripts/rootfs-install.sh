@@ -71,6 +71,16 @@ if [ -n "${BASH_VERSION-}" ] && command -v starship >/dev/null 2>&1 && \
 fi
 EOF
 fi
+if ! grep -q 'tmux new-session -A -s login' /etc/bash.bashrc 2>/dev/null; then
+    cat >>/etc/bash.bashrc <<'EOF'
+
+# Attach interactive shells to the persistent "login" tmux session.
+if [ -z "${TMUX-}" ] && [ -n "${PS1-}" ] && [ -t 0 ] && \
+   command -v tmux >/dev/null 2>&1; then
+    exec tmux new-session -A -s login
+fi
+EOF
+fi
 
 log "kmscon console"
 # kmscon is the userspace DRM console requested for this image.  It lives in
@@ -198,6 +208,10 @@ cat >/etc/systemd/logind.conf.d/devterm.conf <<'EOF'
 HandleLidSwitch=ignore
 HandleLidSwitchExternalPower=ignore
 HandleLidSwitchDocked=ignore
+# The A04 power button is an AXP221 PEK input; suspend instead of poweroff.
+HandlePowerKey=suspend
+HandlePowerKeyLongPress=poweroff
+HandleSuspendKey=suspend
 EOF
 cat >/etc/systemd/journald.conf.d/devterm.conf <<'EOF'
 [Journal]
@@ -273,7 +287,7 @@ LABEL devterm
   LINUX /boot/Image
   FDT /boot/devterm-a04.dtb
   INITRD /boot/initrd.img
-  APPEND root=LABEL=devterm-root rootfstype=ext4 rootwait rw console=ttyS0,115200 console=tty0 fbcon=rotate:1 loglevel=4
+  APPEND root=LABEL=devterm-root rootfstype=ext4 rootwait rw console=ttyS0,115200 console=tty0 fbcon=rotate:1 loglevel=4 mem_sleep_default=s2idle
 EOF
 
 log "fonts"
@@ -341,7 +355,7 @@ systemctl disable kmsconvt@tty1.service >/dev/null 2>&1 || true
 enable_unit ly-kmsconvt@.service
 enable_unit ly-kmsconvt@tty1.service
 systemctl set-default multi-user.target >/dev/null 2>&1 || true
-systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target >/dev/null 2>&1 || true
+systemctl mask hibernate.target hybrid-sleep.target >/dev/null 2>&1 || true
 
 log "cleanup"
 # File capabilities are lost when the tar is extracted as an unprivileged
