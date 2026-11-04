@@ -22,7 +22,10 @@ if [ -x /usr/bin/kmscon ]; then
         tries=$((tries + 1))
         : >"$log" 2>/dev/null || log=/dev/null
         start=$(date +%s)
-        /usr/bin/kmscon --term=linux --no-hwaccel --vt="$vt" \
+        # kmscon gets 256-color support, but tmux sizes its client from TERM.
+        # TERM=linux advertises 8 colors and makes tmux flatten bright
+        # backgrounds (SGR 100) to black; xterm-256color keeps gray segments.
+        /usr/bin/kmscon --term=xterm-256color --no-hwaccel --vt="$vt" \
             --login -- /usr/bin/ly --use-kmscon-vt >>"$log" 2>&1
         rc=$?
         elapsed=$(( $(date +%s) - start ))

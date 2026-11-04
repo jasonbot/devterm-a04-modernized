@@ -75,7 +75,7 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          usr/bin/ly etc/ly/config.lua \
          usr/lib/systemd/system/ly-kmsconvt@.service \
          usr/lib/aarch64-linux-gnu/libasound.so.2; do
-    [ -e "$ART/rootfs/$f" ] || die "rootfs is missing /$f"
+    [ -e "$ART/rootfs/$f" ] || [ -L "$ART/rootfs/$f" ] || die "rootfs is missing /$f"
 done
 grep -A2 '^Package: libasound2t64$' "$ART/rootfs/var/lib/dpkg/status" | \
     grep -q 'Status: install ok installed' || die "libasound2t64 is not installed"

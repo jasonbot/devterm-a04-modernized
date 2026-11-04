@@ -58,6 +58,10 @@ debugfs -R 'cat /etc/kmscon/kmscon.conf' "$part" 2>/dev/null | \
     grep -q '^no-hwaccel$' || die "kmscon hwaccel is not disabled"
 debugfs -R 'cat /etc/kmscon/kmscon.conf' "$part" 2>/dev/null | \
     grep -q '^font-size=16$' || die "kmscon default font size is not 16"
+debugfs -R 'cat /etc/kmscon/kmscon.conf' "$part" 2>/dev/null | \
+    grep -q '^term=xterm-256color$' || die "kmscon TERM is not 256-color"
+debugfs -R 'cat /usr/local/sbin/devterm-ly-console' "$part" 2>/dev/null | \
+    grep -q -- '--term=xterm-256color' || die "Ly kmscon launcher TERM is not 256-color"
 debugfs -R 'cat /etc/vconsole.conf' "$part" 2>/dev/null | \
     grep -q '^FONT=PaperMonoNerdFont-8x16$' || die "default console font is not 8x16"
 debugfs -R 'cat /etc/tmux.conf' "$part" 2>/dev/null | \

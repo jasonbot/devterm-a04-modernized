@@ -103,7 +103,11 @@ font-size=16
 rotate=right
 xkb-model=pc105
 xkb-layout=us
-term=linux
+# kmscon implements 256-color SGR, but the child TERM decides what
+# applications think it supports.  "linux" advertises only 8 colors, so
+# tmux flattens bright backgrounds (SGR 100) to black.  xterm-256color
+# makes tmux pass the bright background through to kmscon.
+term=xterm-256color
 # The vendor 5.10 sun4i-drm driver provides DRM dumb buffers, so kmscon's
 # software drm2d backend works on the A04.  The H6 has no usable 3D driver in
 # this kernel, so never select the GBM/EGL drm3d backend.  Boolean options in
