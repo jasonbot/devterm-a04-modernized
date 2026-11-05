@@ -1,0 +1,79 @@
+#!/bin/sh
+# Measure what the A04 is drawing from its battery pack.
+#
+# The AXP221 fuel gauge reports battery current and voltage; their product is
+# the pack power.  A positive current means the pack is being charged, a
+# negative one is the system drawing from it.  Use several seconds for a
+# stable idle figure, and unplug the charger first -- while charging the
+# current is the charge current, not the system load.
+#
+# usage: devterm-power [seconds]
+set -u
+
+ps=${POWER_SUPPLY_DIR:-/sys/class/power_supply}
+batt=
+for d in "$ps"/*; do
+    [ "$(cat "$d/type" 2>/dev/null)" = Battery ] || continue
+    batt=$d
+    break
+done
+[ -n "$batt" ] || { echo "devterm-power: no battery in $ps" >&2; exit 1; }
+
+# Print the file's value only if it is an optionally signed integer.
+read_num() {
+    v=$(cat "$1" 2>/dev/null) || return 1
+    digits=${v#-}
+    case $digits in ''|*[!0-9]*) return 1 ;; esac
+    printf '%s' "$v"
+}
+
+# One sample in milliwatts (uV * uA / 1e9), sign preserved.
+sample_mw() {
+    now=$(read_num "$batt/current_now") || return 1
+    volt=$(read_num "$batt/voltage_now") || return 1
+    printf '%s' $((now * volt / 1000000000))
+}
+
+count=${1:-1}
+case $count in ''|*[!0-9]*) count=1 ;; esac
+[ "$count" -eq 0 ] && count=1
+[ "$count" -gt 3600 ] && count=3600
+
+i=0
+sum=0
+min=
+max=
+while [ "$i" -lt "$count" ]; do
+    mw=$(sample_mw) || { echo "devterm-power: cannot read pack current" >&2; exit 1; }
+    sum=$((sum + mw))
+    if [ -z "$min" ]; then
+        min=$mw
+        max=$mw
+    else
+        [ "$mw" -lt "$min" ] && min=$mw
+        [ "$mw" -gt "$max" ] && max=$mw
+    fi
+    i=$((i + 1))
+    if [ "$i" -lt "$count" ]; then
+        sleep 1
+    fi
+done
+avg=$((sum / count))
+
+volt=$(read_num "$batt/voltage_now") || volt=0
+cur=$(read_num "$batt/current_now") || cur=0
+cap=$(cat "$batt/capacity" 2>/dev/null)
+stat=$(cat "$batt/status" 2>/dev/null)
+ac=$(cat "$batt/online" 2>/dev/null)
+
+ctx=$(printf '%s%% %s AC=%s' "${cap:-?}" "${stat:-?}" "${ac:-?}")
+
+awk -v avg="$avg" -v min="$min" -v max="$max" -v v="$volt" -v c="$cur" \
+    -v ctx="$ctx" -v n="$count" 'BEGIN {
+    dir = (avg < 0) ? "draw" : "charge"
+    if (avg < 0) { avg = -avg; min = -min; max = -max }
+    if (min < 0) min = -min
+    if (max < 0) max = -max
+    printf "%.2f W %s (min %.2f, max %.2f) | pack %.2fV %+.2fA %s | %ds\n",
+        avg / 1000, dir, min / 1000, max / 1000, v / 1e6, c / 1e6, ctx, n
+}'
