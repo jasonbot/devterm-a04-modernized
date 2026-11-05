@@ -226,7 +226,7 @@ The image ships `/etc/tmux.conf`:
   is 60 columns wide, so tmux drops the left end of the right side when it
   does not fit: long SSIDs are cut before the icons, the battery and the time
 - clicking the status bar opens `nmtui-go` in a tmux popup via
-  `sudo devterm-wifi`
+  `sudo devterm-wifi`, except on a window name: that click selects the window
 - every interactive login attaches to the persistent tmux session `login`;
   detaching and logging in again reattaches the same session
 - `devterm-wifi status` and `devterm-tailscale-status` print the same
