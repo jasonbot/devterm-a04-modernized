@@ -27,7 +27,9 @@ read_num() {
     printf '%s' "$v"
 }
 
-# One sample in milliwatts (uV * uA / 1e9), sign preserved.
+# One sample in milliwatts (uV * uA / 1e9).  The AXP221 driver reports the
+# magnitude of the charge or discharge current, so direction comes from the
+# status file, not from the sign.
 sample_mw() {
     now=$(read_num "$batt/current_now") || return 1
     volt=$(read_num "$batt/voltage_now") || return 1
@@ -68,12 +70,19 @@ ac=$(cat "$batt/online" 2>/dev/null)
 
 ctx=$(printf '%s%% %s AC=%s' "${cap:-?}" "${stat:-?}" "${ac:-?}")
 
+# The AXP221 driver reports the magnitude of the charge or discharge current,
+# so the direction comes from the status file, not from the sign.
+case ${stat:-} in
+    Charging*) dir=charge ;;
+    Discharging*|"Not charging") dir=draw ;;
+    *) dir=idle ;;
+esac
+
 awk -v avg="$avg" -v min="$min" -v max="$max" -v v="$volt" -v c="$cur" \
-    -v ctx="$ctx" -v n="$count" 'BEGIN {
-    dir = (avg < 0) ? "draw" : "charge"
-    if (avg < 0) { avg = -avg; min = -min; max = -max }
+    -v ctx="$ctx" -v n="$count" -v dir="$dir" 'BEGIN {
+    if (avg < 0) avg = -avg
     if (min < 0) min = -min
     if (max < 0) max = -max
-    printf "%.2f W %s (min %.2f, max %.2f) | pack %.2fV %+.2fA %s | %ds\n",
+    printf "%.2f W %s (min %.2f, max %.2f) | pack %.2fV %.2fA %s | %ds\n",
         avg / 1000, dir, min / 1000, max / 1000, v / 1e6, c / 1e6, ctx, n
 }'
