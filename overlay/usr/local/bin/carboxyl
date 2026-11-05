@@ -1,0 +1,9 @@
+#!/bin/sh
+# Launch Carboxyl, the Servo-based terminal browser, from /opt/carboxyl.
+#
+# Mesa's default EGL driver on the A04 reports OpenGL 2.1 and Servo refuses to
+# start below 3.2; the software (llvmpipe) path reports 4.5.  There is no GPU
+# available here anyway: kmscon owns the only DRM node.
+set -eu
+export LIBGL_ALWAYS_SOFTWARE=1
+exec /opt/carboxyl/carboxyl "$@"

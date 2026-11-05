@@ -58,6 +58,7 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          usr/local/share/fonts/nerd-fonts/PaperMonoNerdFont-Regular.otf \
          opt/carbonyl/carbonyl usr/local/bin/devterm-kiosk \
          usr/bin/cha usr/bin/mancha usr/libexec/chawan/cgi-bin/ssl \
+         usr/local/bin/carboxyl usr/local/bin/devterm-kiosk \
          usr/bin/kmscon usr/local/bin/nmtui-go \
          usr/lib/firmware/brcm/brcmfmac43455-sdio.txt \
          'usr/lib/firmware/brcm/brcmfmac43455-sdio.clockwork,devterm-a04.txt' \

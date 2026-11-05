@@ -20,6 +20,10 @@ cp -a /work/artifacts/vendor/. "$target/opt/devterm-payload/"
 cp -a /work/artifacts/fonts "$target/opt/devterm-payload/fonts"
 cp -a /work/artifacts/consolefonts "$target/opt/devterm-payload/consolefonts"
 cp -a /work/artifacts/carbonyl "$target/opt/devterm-payload/carbonyl"
+# Carboxyl is built separately (see BUILD.md); install it when present.
+if [ -d /work/artifacts/carboxyl ]; then
+    cp -a /work/artifacts/carboxyl "$target/opt/devterm-payload/carboxyl"
+fi
 cp -a /work/artifacts/chawan "$target/opt/devterm-payload/chawan"
 cp -a /work/artifacts/kmscon "$target/opt/devterm-payload/kmscon"
 cp -a /work/artifacts/nmtui-go "$target/opt/devterm-payload/nmtui-go"

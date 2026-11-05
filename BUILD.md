@@ -86,6 +86,56 @@ make verify
 - Chawan `0.5.1` source and the kmscon `10.0.4` source
 - Debian 13 arm64 packages during the rootfs stage
 
+### Carboxyl (optional)
+
+Carboxyl is the Servo-based terminal browser and the preferred one when it is
+installed.  Upstream ships only an x86_64 binary, so arm64 is cross-compiled on
+a Linux host; `make image` picks it up only if `artifacts/carboxyl/carboxyl`
+exists, installing it to `/opt/carboxyl` (the overlay provides
+`/usr/local/bin/carboxyl`, and `devterm-kiosk` prefers it over Carbonyl).
+
+Working recipe, with an arm64 Debian trixie sysroot that has
+`libfontconfig1-dev`, `libfreetype-dev` and `zlib1g-dev` (the arm64 builder
+image from the earlier attempt works):
+
+```sh
+podman create --name cbosys localhost/devterm-carboxyl-builder:latest
+podman export cbosys | tar -x -C ~/a64sys \
+    --exclude='opt/rustup' --exclude='opt/cargo'; podman rm cbosys
+cargo install cargo-zigbuild          # or fetch its release binary
+# zig 0.15.2 from ziglang.org
+git clone --branch v0.2.0 https://github.com/carboxyl-rs/carboxyl
+cd carboxyl
+SYS=$HOME/a64sys; INC=$HOME/a64inc
+cp $SYS/usr/include/zlib.h $SYS/usr/include/zconf.h "$INC"   # see (1)
+ln -sf libstdc++.so.6.0.33 $SYS/usr/lib/aarch64-linux-gnu/libstdc++.so
+export PATH="$HOME/opt/zig:$PATH"
+PKG_CONFIG_ALLOW_CROSS=1 PKG_CONFIG_SYSROOT_DIR="$SYS" \
+PKG_CONFIG_LIBDIR="$SYS/usr/lib/aarch64-linux-gnu/pkgconfig:$SYS/usr/share/pkgconfig" \
+CFLAGS_aarch64_unknown_linux_gnu="-I$INC" \
+CXXFLAGS_aarch64_unknown_linux_gnu="-I$INC -x c++" \
+RUSTFLAGS="-C link-arg=-L$SYS/usr/lib/aarch64-linux-gnu -C link-arg=$SYS/usr/lib/aarch64-linux-gnu/libstdc++.so.6.0.33" \
+cargo zigbuild --release --target aarch64-unknown-linux-gnu
+mkdir -p ../devterm-upgrade/artifacts/carboxyl
+cp target/aarch64-unknown-linux-gnu/release/carboxyl ../devterm-upgrade/artifacts/carboxyl/
+```
+
+Four workarounds are needed and are not optional:
+
+1. `freetype-sys`' bundled libpng passes a relative `libz-sys/src/zlib`
+   include that only resolves when the *host* has a system zlib, so the target
+   zlib headers are added through `CFLAGS`.
+2. ANGLE compiles `xxhash.c` with the C++ driver; zig's clang rejects
+   `-std=c++17` for C, so `-x c++` forces C++ mode.
+3. Without the explicit `libstdc++.so` path the link fails with undefined
+   `std::` symbols: the driver dedupes `-lstdc++` from the C++ objects.
+4. Do not pass a glibc suffix (`.2.41`) in the target; zig 0.15.2 rejects it.
+
+At runtime the binary links `libfontconfig.so.1`, `libstdc++.so.6` and the
+system `libEGL.so`; `/usr/local/bin/carboxyl` exports
+`LIBGL_ALWAYS_SOFTWARE=1`, because Mesa otherwise reports OpenGL 2.1 and
+Servo refuses to start below 3.2 (llvmpipe reports 4.5).
+
 `make uboot`:
 
 - builds TF-A BL31 for `sun50i_h6`

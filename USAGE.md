@@ -149,30 +149,37 @@ console itself can only use the generated PSF2 sizes above.
 
 ## Terminal browsers without X or Wayland
 
-Two browsers are installed.  Both render into the text console.
+Browsers that render into the text console, no window server needed.
 
 ```sh
-devterm-kiosk https://example.com   # Carbonyl (Chromium)
-cha https://example.com             # Chawan (Nim), smaller/faster
+devterm-kiosk https://example.com   # Carboxyl (Servo) when installed
+carboxyl https://example.com        # Carboxyl directly
+cha https://example.com             # Chawan (Nim), smallest and fastest
 ```
 
-- **Carbonyl** is the Chromium-based original.  It has the widest site
-  compatibility but is the heaviest; `devterm-kiosk` runs it full-screen and
-  falls back to `w3m` if it cannot start.  Profile: `~/.cache/carbonyl`.
+- **Carboxyl** is the Servo-based successor to Carbonyl.  `carboxyl` sets
+  `LIBGL_ALWAYS_SOFTWARE=1` because the A04's Mesa driver otherwise reports
+  OpenGL 2.1 and Servo needs 3.2; rendering then goes through llvmpipe.  It
+  uses about 180 MB of RAM and roughly a fifth of one core on a static page
+  at `-f 10`.  `-f <fps>`, `--scale <percent>`,
+  `--graphics auto|kitty|sixel|quadrant` and `--no-native-text` control the
+  output; the console uses quadrant blocks.
+- **Carbonyl** is the older Chromium-based browser, kept as the fallback and
+  what `devterm-kiosk` used before Carboxyl was installed.  Profile:
+  `~/.cache/carbonyl`.
 - **Chawan** is a small, self-contained Nim engine with CSS, forms and an
-  optional JavaScript mode.  It is the lightest of the two.  `mancha` reads
+  optional JavaScript mode.  It is the lightest of the three.  `mancha` reads
   man pages through it.
 
-The A04 has 2 GB of RAM.  Carbonyl/Chromium is heavy; close other programs
-and avoid many tabs.  Chawan is much lighter.  The image enables a 1 GB zram
-swap device.
+The A04 has 2 GB of RAM.  Close other programs before using a full browser;
+the image enables a 1 GB zram swap device.
 
 Useful checks:
 
 ```sh
-TERM=xterm-256color /opt/carbonyl/carbonyl --version
+carboxyl --version
 cha -h
-ldd /opt/carbonyl/carbonyl
+TERM=xterm-256color LIBGL_ALWAYS_SOFTWARE=1 /opt/carboxyl/carboxyl --help
 ```
 
 ## Ly login screen

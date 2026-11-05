@@ -310,6 +310,14 @@ cp -a "$PAYLOAD"/carbonyl/. /opt/carbonyl/
 chmod 755 /opt/carbonyl/carbonyl
 ln -sf /opt/carbonyl/carbonyl /usr/local/bin/carbonyl
 
+# Carboxyl (Servo) is the preferred browser when the cross-build is present.
+if [ -x "$PAYLOAD/carboxyl/carboxyl" ]; then
+    rm -rf /opt/carboxyl
+    mkdir -p /opt/carboxyl
+    cp -a "$PAYLOAD"/carboxyl/. /opt/carboxyl/
+    chmod 755 /opt/carboxyl/carboxyl
+fi
+
 # Chawan is a small Nim-based TUI browser; its staged tree contains
 # /usr/bin/cha, /usr/bin/mancha, /usr/libexec/chawan and the man pages.
 cp -a "$PAYLOAD"/chawan/. /

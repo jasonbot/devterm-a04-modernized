@@ -24,6 +24,7 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /boot/extlinux/extlinux.conf /etc/vconsole.conf \
          /opt/carbonyl/carbonyl /usr/bin/kmscon /etc/kmscon/kmscon.conf \
          /usr/bin/cha /usr/bin/mancha /usr/libexec/chawan/cgi-bin/ssl \
+         /usr/local/bin/carboxyl /usr/local/bin/devterm-kiosk \
          /usr/share/doc/kmscon/A04-GUARD \
          /usr/local/bin/nmtui-go \
          /usr/bin/starship /etc/starship.toml /etc/profile.d/starship.sh \

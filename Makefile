@@ -43,6 +43,7 @@ clean:
 distclean: clean
 	rm -rf artifacts/devterm-a04.img artifacts/devterm-a04.img.zst \
 	       artifacts/rootfs artifacts/rootfs.ext4 artifacts/export \
-	       artifacts/fonts artifacts/carbonyl artifacts/chawan artifacts/kmscon artifacts/nmtui-go \
+	       artifacts/fonts artifacts/carbonyl artifacts/carboxyl artifacts/chawan \
+	       artifacts/kmscon artifacts/nmtui-go \
 	       artifacts/vendor artifacts/uboot \
 	       artifacts/src artifacts/SHA256SUMS artifacts/*.partition-table.txt

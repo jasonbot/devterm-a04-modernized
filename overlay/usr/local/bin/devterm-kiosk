@@ -1,6 +1,6 @@
 #!/bin/sh
-# Launch Carbonyl, a Chromium-based browser that renders into the Linux
-# framebuffer console (no X11 and no Wayland).
+# Launch a browser that renders into the Linux framebuffer console (no X11,
+# no Wayland): Carboxyl (Servo) when installed, else Carbonyl (Chromium).
 set -eu
 
 url="${1:-https://example.com}"
@@ -8,8 +8,14 @@ case "${TERM:-}" in
     linux|dumb|"") export TERM=xterm-256color ;;
 esac
 
+# Carboxyl (Servo) is the preferred browser; Carbonyl is the older
+# Chromium-based fallback and w3m the last resort.
+if [ -x /opt/carboxyl/carboxyl ] && [ -x /usr/local/bin/carboxyl ]; then
+    exec /usr/local/bin/carboxyl "$url"
+fi
+
 if [ ! -x /opt/carbonyl/carbonyl ]; then
-    echo "Carbonyl is not installed; falling back to w3m." >&2
+    echo "Neither Carboxyl nor Carbonyl is installed; falling back to w3m." >&2
     exec w3m "$url"
 fi
 
