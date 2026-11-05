@@ -68,7 +68,10 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          usr/bin/tailscale usr/sbin/tailscaled usr/bin/yazi etc/tmux.conf \
          usr/local/bin/devterm-wifi usr/local/bin/devterm-tailscale-status \
          etc/profile.d/tmux-login.sh \
-         usr/local/bin/devterm-battery \
+         usr/local/bin/devterm-battery usr/local/bin/devterm-power \
+         usr/local/bin/devterm-idle-suspend \
+         usr/lib/systemd/system/devterm-idle-suspend.timer \
+         usr/lib/systemd/system-sleep/devterm-resume-stamp \
          usr/bin/starship etc/starship.toml etc/profile.d/starship.sh \
          etc/skel/.config/starship.toml home/devterm/.config/starship.toml \
          usr/lib/systemd/system/devterm-tailscale-operator.service \

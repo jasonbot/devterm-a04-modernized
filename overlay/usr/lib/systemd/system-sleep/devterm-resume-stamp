@@ -1,0 +1,6 @@
+#!/bin/sh
+# Remember when the system resumed, so devterm-idle-suspend does not put it
+# straight back to sleep after a power-key or RTC wake.
+case ${1:-} in
+    post) date +%s >/run/devterm-last-resume ;;
+esac

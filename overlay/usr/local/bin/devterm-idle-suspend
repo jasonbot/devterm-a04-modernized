@@ -1,0 +1,61 @@
+#!/bin/sh
+# Suspend the A04 when the console has been idle on battery.
+#
+# Started by devterm-idle-suspend.timer every minute.  A wrong wake costs the
+# user a power cycle, so the checks are deliberately conservative: it only
+# acts on battery, never with a remote session open, never while the machine
+# is busy, and not before the grace period after boot or resume has passed.
+#
+# The console runs tmux (see /etc/profile.d/tmux-login.sh), and tmux's
+# per-client activity time is the last keyboard/mouse event on that client.
+#
+# DEVT_IDLE_TIMEOUT overrides the idle time in seconds (default 900) and
+# POWER_SUPPLY_DIR the sysfs root; both exist for testing.
+set -u
+
+idle_timeout=${DEVT_IDLE_TIMEOUT:-900}
+ps=${POWER_SUPPLY_DIR:-/sys/class/power_supply}
+
+# Only on battery.
+status=$(cat "$ps/axp20x-battery/status" 2>/dev/null || true)
+[ "$status" = Discharging ] || exit 0
+
+# Never while a remote (SSH) session is open.
+for s in $(loginctl list-sessions --no-legend 2>/dev/null | awk '{ print $1 }'); do
+    if [ "$(loginctl show-session "$s" -p Remote --value 2>/dev/null)" = yes ]; then
+        exit 0
+    fi
+done
+
+# Without a console tmux client (for example on the Ly login screen) there is
+# no activity source, so stay awake rather than guess.
+console_user=$(loginctl list-sessions --no-legend 2>/dev/null | \
+    awk '$5 ~ /^tty/ { print $3; exit }')
+[ -n "${console_user:-}" ] || exit 0
+activity=$(runuser -u "$console_user" -- tmux list-clients \
+    -F '#{client_activity}' 2>/dev/null | sort -n | tail -n 1)
+[ -n "${activity:-}" ] || exit 0
+
+# The reference point is the newest of: last keypress, last resume, boot.
+now=$(date +%s)
+last=$activity
+if [ -r /run/devterm-last-resume ]; then
+    resumed=$(cat /run/devterm-last-resume 2>/dev/null || true)
+    case ${resumed:-} in
+        ''|*[!0-9]*) ;;
+        *) [ "$resumed" -gt "$last" ] && last=$resumed ;;
+    esac
+fi
+uptime=$(cut -d. -f1 /proc/uptime)
+boot=$((now - uptime))
+[ "$boot" -gt "$last" ] && last=$boot
+
+# A clock jump or a stale file must not trigger an immediate suspend.
+[ "$last" -le "$now" ] || exit 0
+[ $((now - last)) -ge "$idle_timeout" ] || exit 0
+
+# Do not suspend a machine that is doing something.
+awk -v l="$(cut -d' ' -f1 /proc/loadavg)" 'BEGIN { exit !(l < 0.75) }' || \
+    exit 0
+
+exec systemctl suspend

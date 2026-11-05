@@ -1,0 +1,11 @@
+[Unit]
+Description=Suspend the DevTerm when the console is idle on battery
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=5s
+Unit=devterm-idle-suspend.service
+
+[Install]
+WantedBy=timers.target

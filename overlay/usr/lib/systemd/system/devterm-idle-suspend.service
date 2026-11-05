@@ -1,0 +1,7 @@
+[Unit]
+Description=DevTerm idle suspend check
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/devterm-idle-suspend

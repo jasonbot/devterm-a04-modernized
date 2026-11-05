@@ -251,6 +251,50 @@ targets are not masked.  If suspend/resume is unreliable on your A04 revision,
 use the long press or `sudo poweroff`; deep suspend would require the Crust
 SCP firmware, which this image does not ship.
 
+On battery, `devterm-idle-suspend.timer` suspends after 15 minutes without
+keyboard or mouse activity on the console tmux client.  It stays awake while a
+remote (SSH) session exists, while charging, while the load is above 0.75, and
+for a full idle period after boot or resume.  Change the interval with a
+drop-in:
+
+```sh
+sudo systemctl edit devterm-idle-suspend.service
+# [Service]
+# Environment=DEVT_IDLE_TIMEOUT=1800
+```
+
+## Battery and power draw
+
+`devterm-power [seconds]` samples the AXP221 fuel gauge and prints the pack
+draw, for example:
+
+```text
+3.40 W draw (min 3.12, max 3.67) | pack 3.77V 0.90A 83% Discharging AC=0 | 30s
+```
+
+Run it on battery; while charging the current is the charge current, not the
+system load.
+
+The AXP221 has no coulomb counter.  `capacity` follows the open-circuit
+voltage and is re-estimated after a resume, so a percentage jump across a sleep
+is normal; `energy_now` is derived from the percentage rather than a learned
+full-charge capacity, and `health` only reports the driver's coarse state
+(`Good`/`Unknown`).  For a real health check, compare the internal resistance:
+run `devterm-power 20` idle and again with the CPUs busy, then divide the
+voltage drop by the current rise.  A healthy 18650 pair is in the tens of
+milliohms; a few hundred means the pack is tired.
+
+Idle draw is about 3.4 W, dominated by the SoC, Wi-Fi and DRAM rather than the
+display (0/9 backlight is only ~0.2 W below 5/9).
+
+Useful checks:
+
+```sh
+/usr/local/bin/devterm-power 30
+cat /sys/class/power_supply/axp20x-battery/{capacity,health,voltage_now,current_now}
+systemctl list-timers devterm-idle-suspend.timer
+```
+
 ## Tailscale
 
 The official Tailscale package for Debian trixie is installed and

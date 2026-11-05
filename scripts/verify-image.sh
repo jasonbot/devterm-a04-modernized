@@ -37,7 +37,10 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /usr/lib/firmware/brcm/brcmfmac43456-sdio.txt \
          /usr/lib/firmware/brcm/brcmfmac43456-sdio.clockwork,devterm-a04.txt \
          /usr/local/bin/devterm-wifi /usr/local/bin/devterm-tailscale-status \
-         /usr/local/bin/devterm-battery \
+         /usr/local/bin/devterm-battery /usr/local/bin/devterm-power \
+         /usr/local/bin/devterm-idle-suspend \
+         /usr/lib/systemd/system/devterm-idle-suspend.timer \
+         /usr/lib/systemd/system-sleep/devterm-resume-stamp \
          /usr/lib/systemd/system/devterm-tailscale-operator.service \
          /usr/bin/ly /etc/ly/config.lua /etc/pam.d/ly \
          /usr/local/sbin/devterm-ly-console \
@@ -76,6 +79,9 @@ debugfs -R 'cat /boot/extlinux/extlinux.conf' "$part" 2>/dev/null | \
     grep -q 'mem_sleep_default=s2idle' || die "s2idle kernel parameter is missing"
 debugfs -R 'cat /etc/tmux.conf' "$part" 2>/dev/null | \
     grep -q 'devterm-battery' || die "tmux battery status is missing"
+timers=$(debugfs -R 'ls -l /etc/systemd/system/timers.target.wants' "$part" 2>/dev/null)
+printf '%s\n' "$timers" | grep -q 'devterm-idle-suspend.timer' || \
+    die "idle suspend timer is not enabled"
 
 # The image is arm64; if qemu-user is available, run the two binaries that
 # matter on the A04's ARMv8.0 CPU.  A native/container build of Ly emits
@@ -131,6 +137,38 @@ if command -v qemu-aarch64-static >/dev/null 2>&1 && [ -d "$ART/rootfs" ]; then
         die "devterm-battery does not report the half-full glyph and 57%"
     printf '%s' "$batt_out" | grep -qF "$(printf '\357\203\247')" || \
         die "devterm-battery does not report the charging bolt"
+    # The idle-suspend decision logic must run under the image's shell too:
+    # idle -> suspend, recent input or charging -> stay awake.
+    debugfs -R "dump /usr/local/bin/devterm-idle-suspend $tmp/devterm-idle-suspend" "$part" >/dev/null 2>&1
+    mkdir -p "$tmp/idps/axp20x-battery" "$tmp/idstub"
+    printf 'Battery\n' > "$tmp/idps/axp20x-battery/type"
+    printf 'Discharging\n' > "$tmp/idps/axp20x-battery/status"
+    cat > "$tmp/idstub/loginctl" <<'STUB'
+#!/bin/sh
+[ "$1" = list-sessions ] && echo "1 1000 devterm seat0 tty1"
+STUB
+    cat > "$tmp/idstub/runuser" <<'STUB'
+#!/bin/sh
+echo $(( $(date +%s) - ${IDLE_AGO:-5000} ))
+STUB
+    cat > "$tmp/idstub/systemctl" <<'STUB'
+#!/bin/sh
+echo "SUSPEND $*"
+STUB
+    chmod 755 "$tmp/idstub/loginctl" "$tmp/idstub/runuser" "$tmp/idstub/systemctl"
+    idstub() {
+        env PATH="$tmp/idstub:$PATH" POWER_SUPPLY_DIR="$tmp/idps" \
+            IDLE_AGO="${1:-5000}" \
+            qemu-aarch64-static -cpu cortex-a53 -L "$ART/rootfs" \
+            "$tmp/dash" "$tmp/devterm-idle-suspend"
+    }
+    printf '%s' "$(idstub)" | grep -q 'SUSPEND suspend' || \
+        die "idle suspend does not fire after a long idle period"
+    printf '%s' "$(idstub 5)" | grep -q 'SUSPEND' && \
+        die "idle suspend fires while the console is active"
+    printf 'Charging\n' > "$tmp/idps/axp20x-battery/status"
+    printf '%s' "$(idstub)" | grep -q 'SUSPEND' && \
+        die "idle suspend fires while charging"
     log "Ly runs on Cortex-A53; kmscon DRM 2D, Chawan, Yazi, nmtui-go, starship and devterm-battery: ok"
 else
     warn "qemu-aarch64-static or artifacts/rootfs missing; skipping arm64 smoke test"

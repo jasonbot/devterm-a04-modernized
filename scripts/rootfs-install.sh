@@ -349,6 +349,7 @@ enable_unit devterm-printer.service
 enable_unit devterm-fan-temp-daemon-a04.service
 enable_unit devterm-audio-patch.service
 enable_unit devterm-growroot.service
+enable_unit devterm-idle-suspend.timer
 # Hand tty1 and the autovt alias to Ly running inside kmscon.  Ly's
 # ly-kmsconvt@.service has OnFailure=ly@tty1.service, so a kmscon/DRM failure
 # falls back to Ly on the kernel VT.
