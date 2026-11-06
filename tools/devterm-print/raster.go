@@ -13,8 +13,9 @@ import (
 
 // The vendor daemon's undocumented bitmap command: GS v 0 p wL wH hL hH,
 // followed by one bit per dot.  Width is in bytes (8 dots), height in rows.
-// The daemon pads to the 384-dot print head and uses the low bit of each byte
-// for the leftmost dot.  See clockworkpi/DevTerm thermal_printer and
+// The daemon pads to the 384-dot print head.  On the A04 the most significant
+// bit is the leftmost dot: packing it the other way round mirrors every glyph
+// in 8-dot slices (the 2021 forum notes claim LSB, but the hardware says MSB).  See clockworkpi/DevTerm thermal_printer and
 // forum.clockworkpi.com/t/7650.
 const (
 	printerWidth = 384

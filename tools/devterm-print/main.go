@@ -15,6 +15,7 @@ type options struct {
 	zpl     string
 	mdStdin bool
 	test    bool
+	solid   bool
 
 	font     string
 	fontDirs string
@@ -24,7 +25,7 @@ type options struct {
 	density  int
 	feed     int
 	band     int
-	msb      bool
+	lsb      bool
 
 	verbose bool
 
@@ -41,6 +42,7 @@ func main() {
 	flag.StringVar(&o.zpl, "zpl", "", "render a ZPL file (\"-\" reads stdin)")
 	flag.BoolVar(&o.mdStdin, "md", false, "render markdown from the given files, or stdin when none")
 	flag.BoolVar(&o.test, "test", false, "print an alignment and legibility test page")
+	flag.BoolVar(&o.solid, "solid", false, "print a solid black block (paper side / head check)")
 
 	flag.StringVar(&o.font, "font", "", "font family or file (default: Paper Mono Nerd Font)")
 	flag.StringVar(&o.fontDirs, "font-dir", "", "extra font directories, comma separated")
@@ -50,7 +52,7 @@ func main() {
 	flag.IntVar(&o.density, "density", 6, "print density 0-15")
 	flag.IntVar(&o.feed, "feed", 3, "lines to feed after printing")
 	flag.IntVar(&o.band, "band", maxBandRows, "rows per bitmap command (max 65535)")
-	flag.BoolVar(&o.msb, "msb", false, "pack dots most-significant-bit first (default: LSB)")
+	flag.BoolVar(&o.lsb, "lsb", false, "pack dots least-significant-bit first (the A04 head wants MSB; kept for other units)")
 
 	flag.BoolVar(&o.verbose, "v", false, "report the chosen font and page height on stderr")
 
@@ -82,6 +84,7 @@ usage:
   devterm-print README.md [more.md ...]
   devterm-print --zpl label.zpl
   devterm-print --test
+  devterm-print --solid --density=15
 
 options:
 `)
@@ -105,6 +108,8 @@ func run(o options, args []string) error {
 		canvas, err = qrCanvas(string(payload), qrLevel(o.qrLevel), o.width)
 	case o.zpl != "":
 		canvas, err = renderZPL(o, readInput(o.zpl))
+	case o.solid:
+		canvas = solidPage(o)
 	case o.test:
 		canvas = testPage(o)
 	default:
@@ -115,7 +120,7 @@ func run(o options, args []string) error {
 	}
 
 	data := escposPreamble(o.density)
-	data = append(data, canvas.Encode(o.band, o.msb)...)
+	data = append(data, canvas.Encode(o.band, !o.lsb)...)
 	data = append(data, escposFeed(o.feed)...)
 
 	if o.verbose {

@@ -505,3 +505,20 @@ func testPage(o options) *Canvas {
 	fs.mono.draw(c, 2, baseline, "mono 0123456789")
 	return c
 }
+
+// solidPage is the hardware check: a full-width black block means the head,
+// its voltage rail and the paper coating are all working.  A blank strip means
+// one of them is not.
+func solidPage(o options) *Canvas {
+	fs, _ := loadFontSet(o)
+	c := NewCanvas(o.width)
+	rows := 96
+	c.ensure(rows + 40)
+	c.fill(0, 0, o.width, rows, color.Black)
+	if fs != nil {
+		label := "SOLID"
+		w := fs.body.measure(label).Ceil()
+		fs.body.drawInk(c, (o.width-w)/2, rows+fs.body.metrics().Ascent.Ceil()+8, label, color.Black)
+	}
+	return c
+}

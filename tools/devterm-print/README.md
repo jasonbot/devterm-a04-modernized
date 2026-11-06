@@ -7,7 +7,8 @@ Print QR codes, markdown and ZPL labels on the DevTerm A04 thermal printer.
 The vendor daemon (`devterm_thermal_printer.elf`) reads the `DEVTERM_PRINTER_IN`
 pty and drives the print head over SPI.  Besides text it understands an
 undocumented bitmap command, `GS v 0 p wL wH hL hH`, followed by one bit per
-dot (LSB = leftmost dot, 1 = ink), with the width given in bytes.  This tool
+dot (MSB = leftmost dot, 1 = ink), with the width given in bytes.  The A04 head
+needs MSB-first; `--lsb` packs the other way for units that differ.  This tool
 renders everything to 384-dot-wide 1-bit images and streams them as bands of
 at most 192 rows, which keeps each command small and the paper advance
 seamless.
