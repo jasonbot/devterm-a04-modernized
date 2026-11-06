@@ -28,6 +28,8 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /usr/share/doc/kmscon/A04-GUARD \
          /usr/local/bin/nmtui-go \
          /usr/bin/starship /etc/starship.toml /etc/profile.d/starship.sh \
+         /etc/skel/.config/yazi/theme.toml \
+         /etc/skel/.config/yazi/flavors/gruvbox-material.yazi/flavor.toml \
          /etc/skel/.config/starship.toml /home/devterm/.config/starship.toml \
          /etc/profile.d/tmux-login.sh \
          /usr/bin/tailscale /usr/sbin/tailscaled /usr/bin/yazi /etc/tmux.conf \

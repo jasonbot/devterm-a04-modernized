@@ -210,6 +210,13 @@ yazi            # current directory
 yazi /path      # another directory
 ```
 
+The default theme is
+[Gruvbox Material](https://github.com/matt-dong-123/gruvbox-material.yazi),
+vendored under `/etc/skel/.config/yazi` and seeded into the `devterm` and
+`root` accounts.  Yazi only applies a flavour after its terminal replies to
+the DA1 probe; kmscon (libtsm) and normal SSH terminals do.  Pick another
+flavour by editing `~/.config/yazi/theme.toml`.
+
 Yazi uses the terminal's own fonts and images where the terminal supports
 them; kmscon renders text previews.  For richer previews install the optional
 tools, for example:

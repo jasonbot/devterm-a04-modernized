@@ -136,6 +136,15 @@ echo 'deb [signed-by=/usr/share/keyrings/yazi-keyring.gpg] https://yazi-rs.githu
 apt-get update -qq
 apt-get install -y -o APT::Install-Recommends=false yazi
 
+# Gruvbox Material flavour as the default theme, vendored from
+# https://github.com/matt-dong-123/gruvbox-material.yazi
+log "yazi flavour"
+for home in /root /home/devterm; do
+    mkdir -p "$home/.config/yazi"
+    cp -a /etc/skel/.config/yazi/. "$home/.config/yazi/"
+done
+chown -R devterm:devterm /home/devterm/.config/yazi
+
 log "filesystem layout"
 cat >/etc/fstab <<'EOF'
 LABEL=devterm-root  /       ext4    defaults,noatime  0 1

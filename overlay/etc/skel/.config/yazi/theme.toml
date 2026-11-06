@@ -1,0 +1,7 @@
+# Gruvbox Material, https://github.com/matt-dong-123/gruvbox-material.yazi
+# vendored in /etc/skel/.config/yazi/flavors at
+# e0fd2d800aeb6adb680496b1a5ef125b901b7413 (2026-05-06).
+# Set to the same flavour for both modes; the palette is dark-tuned.
+[flavor]
+dark = "gruvbox-material"
+light = "gruvbox-material"

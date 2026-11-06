@@ -74,6 +74,8 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          usr/lib/systemd/system/devterm-idle-suspend.timer \
          usr/lib/systemd/system-sleep/devterm-resume-stamp \
          usr/bin/starship etc/starship.toml etc/profile.d/starship.sh \
+         etc/skel/.config/yazi/theme.toml \
+         etc/skel/.config/yazi/flavors/gruvbox-material.yazi/flavor.toml \
          etc/skel/.config/starship.toml home/devterm/.config/starship.toml \
          usr/lib/systemd/system/devterm-tailscale-operator.service \
          usr/bin/ly etc/ly/config.lua \
