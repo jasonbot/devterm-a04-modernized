@@ -24,6 +24,7 @@ type options struct {
 	duospace bool
 	density  int
 	feed     int
+	feedOnly int
 	band     int
 	lsb      bool
 
@@ -51,6 +52,7 @@ func main() {
 	flag.BoolVar(&o.duospace, "duospace", false, "force one advance for ASCII inside a proportional font")
 	flag.IntVar(&o.density, "density", 6, "print density 0-15")
 	flag.IntVar(&o.feed, "feed", 3, "lines to feed after printing")
+	flag.IntVar(&o.feedOnly, "feed-only", 0, "feed N lines and exit (no printing); a line is the current font height, about 2 mm")
 	flag.IntVar(&o.band, "band", maxBandRows, "rows per bitmap command (max 65535)")
 	flag.BoolVar(&o.lsb, "lsb", false, "pack dots least-significant-bit first (the A04 head wants MSB; kept for other units)")
 
@@ -85,6 +87,7 @@ usage:
   devterm-print --zpl label.zpl
   devterm-print --test
   devterm-print --solid --density=15
+  devterm-print --feed-only=20
 
 options:
 `)
@@ -92,6 +95,9 @@ options:
 }
 
 func run(o options, args []string) error {
+	if o.feedOnly > 0 {
+		return writePrinter(o.printer, escposFeed(o.feedOnly))
+	}
 	var canvas *Canvas
 	var err error
 

@@ -22,7 +22,12 @@ devterm-print --font="Iosevka Nerd Font" README.md
 devterm-print --zpl label.zpl
 devterm-print --test                   # alignment and font legibility page
 devterm-print --qr=hello --png=out.png --out=out.escpos   # preview, no paper
+devterm-print --feed-only=20                              # blank feed, no print
 ```
+
+`--feed-only N` sends the daemon's `ESC d N`, which feeds N font-height lines
+(about 2 mm each with the default 8x16 font).  The raw equivalent is
+`printf '\x1b\x64\x14' > /tmp/DEVTERM_PRINTER_IN` for 20 lines.
 
 `--qr-b4` decodes four base-4 digits per byte (most significant pair first) and
 prints the resulting bytes, so binary payloads can travel through a shell or a
