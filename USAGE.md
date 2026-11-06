@@ -201,6 +201,32 @@ in the config.
 Run `starship --version`, or edit `~/.config/starship.toml` for a per-user
 config.
 
+## Printing
+
+`devterm-print` renders to the 58 mm printer as 384-dot bitmaps: QR codes,
+markdown and a usable subset of ZPL.
+
+```sh
+devterm-print --qr="https://example.com"
+devterm-print --qr-b4=01320132...        # four base-4 digits per byte
+devterm-print notes.md                   # flags must precede file names
+devterm-print --font="0xProto Nerd Font" --size=24 notes.md
+devterm-print --zpl=label.zpl
+devterm-print --test                     # alignment and legibility page
+devterm-print --qr=hello --png=/tmp/q.png --out=/tmp/q.escpos   # preview only
+```
+
+Markdown covers headings, paragraphs with bold/italic/inline code, links,
+ordered and unordered lists, block quotes, fenced code, tables and rules.
+`--font` takes a family name from the installed fonts or a font file;
+families with `Propo`/`Mono` siblings use the mono face for code, and
+`--duospace` forces a single ASCII advance inside a proportional font so
+columns line up.  `--size` is in dots.
+
+`--zpl` handles `^XA/^XZ`, `^PW`, `^FO/^FT`, `^A0N`, `^FD/^FS`, `^GB`,
+`^BY`/`^BC` (Code 128), `^BQ` (QR), `^PQ` and `^FR`; unknown commands are
+ignored.
+
 ## Yazi file manager
 
 `yazi` is installed from the official Yazi apt repository:

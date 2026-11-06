@@ -311,6 +311,11 @@ fc-cache -f >/tmp/fontconfig.log 2>&1 || true
 
 install -m 755 "$PAYLOAD/nmtui-go/nmtui-go" /usr/local/bin/nmtui-go
 
+# Optional: markdown/QR/ZPL printer built from tools/devterm-print.
+if [ -x "$PAYLOAD/devterm-print/devterm-print" ]; then
+    install -m 755 "$PAYLOAD/devterm-print/devterm-print" /usr/local/bin/devterm-print
+fi
+
 log "terminal browsers"
 # Carbonyl (Chromium-based) is kept as the compatibility browser.
 rm -rf /opt/carbonyl

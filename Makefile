@@ -12,6 +12,9 @@ all: image
 fetch:
 	./scripts/fetch.sh
 
+devterm-print:
+	./scripts/build-devterm-print.sh
+
 uboot: fetch
 	./scripts/build-uboot.sh
 
@@ -46,4 +49,5 @@ distclean: clean
 	       artifacts/fonts artifacts/carbonyl artifacts/carboxyl artifacts/chawan \
 	       artifacts/kmscon artifacts/nmtui-go \
 	       artifacts/vendor artifacts/uboot \
-	       artifacts/src artifacts/SHA256SUMS artifacts/*.partition-table.txt
+	       artifacts/src artifacts/SHA256SUMS artifacts/*.partition-table.txt \
+	       artifacts/devterm-print

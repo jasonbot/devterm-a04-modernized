@@ -24,7 +24,9 @@ the system makes the root filesystem use the rest of the card.
 - Wi-Fi, SSH, **Tailscale**, sound, fan control and the 58 mm thermal
   printer.
 - **Yazi**, a fast terminal file manager (text previews; optional preview
-  tools can be installed from apt).
+  tools can be installed from apt), themed with Gruvbox Material.
+- **devterm-print**, which prints QR codes, markdown and ZPL labels on the
+  built-in thermal printer.
 - **tmux** configured with a `Ctrl-a` prefix and a clickable Wi-Fi status
   section; the bar also shows live Tailscale, battery (Nerd Font icon) and
   the clock.

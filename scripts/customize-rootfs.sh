@@ -24,6 +24,9 @@ cp -a /work/artifacts/carbonyl "$target/opt/devterm-payload/carbonyl"
 if [ -d /work/artifacts/carboxyl ]; then
     cp -a /work/artifacts/carboxyl "$target/opt/devterm-payload/carboxyl"
 fi
+if [ -d /work/artifacts/devterm-print ]; then
+    cp -a /work/artifacts/devterm-print "$target/opt/devterm-payload/devterm-print"
+fi
 cp -a /work/artifacts/chawan "$target/opt/devterm-payload/chawan"
 cp -a /work/artifacts/kmscon "$target/opt/devterm-payload/kmscon"
 cp -a /work/artifacts/nmtui-go "$target/opt/devterm-payload/nmtui-go"

@@ -136,6 +136,13 @@ system `libEGL.so`; `/usr/local/bin/carboxyl` exports
 `LIBGL_ALWAYS_SOFTWARE=1`, because Mesa otherwise reports OpenGL 2.1 and
 Servo refuses to start below 3.2 (llvmpipe reports 4.5).
 
+`make devterm-print`:
+
+- cross-builds `tools/devterm-print` for arm64 with the host Go toolchain
+  (`CGO_ENABLED=0 GOOS=linux GOARCH=arm64`)
+- writes `artifacts/devterm-print/devterm-print`, which the rootfs stage
+  installs to `/usr/local/bin/devterm-print` when present
+
 `make uboot`:
 
 - builds TF-A BL31 for `sun50i_h6`
