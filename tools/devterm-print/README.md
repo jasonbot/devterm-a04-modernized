@@ -23,7 +23,17 @@ devterm-print --zpl label.zpl
 devterm-print --test                   # alignment and font legibility page
 devterm-print --qr=hello --png=out.png --out=out.escpos   # preview, no paper
 devterm-print --feed-only=20                              # blank feed, no print
+devterm-print photo.jpg                                   # fit, rotate, dither
 ```
+
+## Images
+
+PNG, JPEG, GIF (first frame), BMP and TIFF are decoded with the Go standard
+library and `x/image`, scaled to the print width with a Catmull-Rom filter, and
+dithered to one bit with gamma-corrected error diffusion (Floyd-Steinberg by
+default, Atkinson on request).  Landscape pictures are rotated 90° by default
+because the paper is a narrow strip; `--rotate=0` keeps the original and
+`--rotate=180/270` suite scans and upside-down photos.
 
 `--feed-only N` sends the daemon's `ESC d N`, which feeds N font-height lines
 (about 2 mm each with the default 8x16 font).  The raw equivalent is

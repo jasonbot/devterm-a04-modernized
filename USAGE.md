@@ -227,6 +227,19 @@ columns line up.  `--size` is in dots.
 `^BY`/`^BC` (Code 128), `^BQ` (QR), `^PQ` and `^FR`; unknown commands are
 ignored.
 
+Images (PNG, JPEG, GIF, BMP, TIFF) are scaled to the 384-dot width and
+dithered to one bit:
+
+```sh
+devterm-print photo.jpg                  # landscape gets turned sideways
+devterm-print --image=scan.png --rotate=180 --dither=atkinson
+```
+
+`--rotate=auto` (the default) turns landscape pictures 90° so they use the
+length of the receipt rather than printing a short letterbox; `0/90/180/270`
+override it.  `--dither=floyd` (default), `atkinson` or `none` picks the
+halftoning.  HEIC needs converting first (`heif-convert photo.heic photo.jpg`).
+
 ## Yazi file manager
 
 `yazi` is installed from the official Yazi apt repository:

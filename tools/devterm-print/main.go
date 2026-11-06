@@ -16,6 +16,9 @@ type options struct {
 	mdStdin bool
 	test    bool
 	solid   bool
+	image   string
+	rotate  string
+	dither  string
 
 	font     string
 	fontDirs string
@@ -44,6 +47,9 @@ func main() {
 	flag.BoolVar(&o.mdStdin, "md", false, "render markdown from the given files, or stdin when none")
 	flag.BoolVar(&o.test, "test", false, "print an alignment and legibility test page")
 	flag.BoolVar(&o.solid, "solid", false, "print a solid black block (paper side / head check)")
+	flag.StringVar(&o.image, "image", "", "print an image (PNG, JPEG, GIF, BMP, TIFF)")
+	flag.StringVar(&o.rotate, "rotate", "auto", "rotate the image: auto, 0, 90, 180 or 270 (auto turns landscape shots sideways)")
+	flag.StringVar(&o.dither, "dither", "floyd", "dithering: floyd, atkinson or none")
 
 	flag.StringVar(&o.font, "font", "", "font family or file (default: Paper Mono Nerd Font)")
 	flag.StringVar(&o.fontDirs, "font-dir", "", "extra font directories, comma separated")
@@ -88,6 +94,8 @@ usage:
   devterm-print --test
   devterm-print --solid --density=15
   devterm-print --feed-only=20
+  devterm-print photo.jpg                       # fit width, turn landscape, dither
+  devterm-print --image=scan.png --rotate=180
 
 options:
 `)
@@ -116,8 +124,12 @@ func run(o options, args []string) error {
 		canvas, err = renderZPL(o, readInput(o.zpl))
 	case o.solid:
 		canvas = solidPage(o)
+	case o.image != "":
+		canvas, err = renderImage(o, readInput(o.image))
 	case o.test:
 		canvas = testPage(o)
+	case len(args) == 1 && isImagePath(args[0]):
+		canvas, err = renderImage(o, readInput(args[0]))
 	default:
 		canvas, err = renderMarkdown(o, args)
 	}
