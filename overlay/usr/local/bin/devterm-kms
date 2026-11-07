@@ -1,0 +1,69 @@
+#!/bin/sh
+# devterm-kms - run a fullscreen KMS/DRM program on the console.
+#
+# kmscon (the login screen) holds the DRM master, and DRM master is exclusive:
+# a second drmSetMaster() gets EPERM, no matter which groups the user is in.
+# There is no permission that grants "master"; the card simply has to be free.
+#
+# This helper stops the console, runs COMMAND as the invoking user on tty1
+# with the card free, then brings the login screen back.  The program itself
+# runs as the user; root is only used for that hand-off (the image already
+# gives devterm passwordless sudo).
+#
+# usage: devterm-kms COMMAND [ARGS...]
+set -eu
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo -n "$0" "$@"
+fi
+if [ "$#" -eq 0 ]; then
+    echo "usage: devterm-kms COMMAND [ARGS...]" >&2
+    exit 2
+fi
+
+user=${SUDO_USER:-devterm}
+home=$(getent passwd "$user" | cut -d: -f6)
+group=$(id -gn "$user")
+
+exec 9>/run/devterm-kms.lock
+if ! flock -n 9; then
+    echo "devterm-kms: another session is already using the console" >&2
+    exit 1
+fi
+
+state=$(mktemp)
+stat -c '%u:%g %a' /dev/tty1 >"$state" 2>/dev/null || echo "0:0 600" >"$state"
+
+cleanup() {
+    set -- $(cat "$state" 2>/dev/null || echo "0:0 600")
+    chown "$1" /dev/tty1 2>/dev/null || true
+    chmod "$2" /dev/tty1 2>/dev/null || true
+    systemctl start ly-kmsconvt@tty1.service >/dev/null 2>&1 || true
+    rm -f "$state"
+}
+trap cleanup EXIT INT TERM
+
+systemctl stop ly-kmsconvt@tty1.service >/dev/null 2>&1 || true
+i=0
+while pgrep -x kmscon >/dev/null && [ "$i" -lt 50 ]; do
+    sleep 0.1
+    i=$((i + 1))
+done
+
+# systemd hands the VT to the service as its controlling terminal and runs it
+# as the user; --wait blocks until it exits.
+rc=0
+systemd-run --quiet --collect --wait \
+    --unit=devterm-kms-run \
+    --uid="$user" --gid="$group" \
+    --property=TTYPath=/dev/tty1 \
+    --property=StandardInput=tty \
+    --property=StandardOutput=tty \
+    --property=StandardError=tty \
+    --property=TTYReset=no \
+    --property=TTYVHangup=no \
+    --property=TTYVTDisallocate=no \
+    --property=WorkingDirectory="$PWD" \
+    --setenv=HOME="$home" --setenv=USER="$user" --setenv=LOGNAME="$user" \
+    --setenv=TERM=linux --setenv=PATH=/usr/local/bin:/usr/bin:/bin \
+    -- "$@" || rc=$?
+exit "$rc"

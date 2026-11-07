@@ -182,6 +182,35 @@ cha -h
 TERM=xterm-256color LIBGL_ALWAYS_SOFTWARE=1 /opt/carboxyl/carboxyl --help
 ```
 
+## Fullscreen DRM programs
+
+Software that talks to KMS/DRM directly (SDL's `kmsdrm` driver, ebitengine with
+a KMS backend) needs two things: read/write access to `/dev/dri/card0` and the
+**DRM master** role.  Access is a group matter — `devterm` is in `video` (card
+nodes) and `input` (`/dev/input/event*`).  Master is not a permission: it is an
+exclusive per-card role, and kmscon holds it while the login screen is up, so a
+second `drmSetMaster()` fails with `EPERM` no matter what groups you are in.
+
+`devterm-kms` performs the hand-off:
+
+```sh
+devterm-kms ./my-game --fullscreen
+```
+
+It stops `ly-kmsconvt@tty1`, waits for kmscon to exit, runs the command as you
+on tty1 (systemd gives it the VT as its controlling terminal) and restarts the
+login screen when the program exits.  The program itself keeps your uid; sudo
+is used only for the hand-off.  The console session, including the tmux
+`login` session, ends while the program runs.
+
+Check the pieces with:
+
+```sh
+id                                                   # video, input
+ls -l /dev/dri/card0 /dev/input/event0
+sudo devterm-kms --help   # prints its usage and exits
+```
+
 ## Ly login screen
 
 Ly is built from source with the kmscon lock-LED error suppressed (kmscon's

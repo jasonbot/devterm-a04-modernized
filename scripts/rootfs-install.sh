@@ -50,7 +50,7 @@ for g in audio video gpio spi i2c plugdev netdev dialout; do
     getent group "$g" >/dev/null 2>&1 || groupadd "$g"
 done
 if ! id devterm >/dev/null 2>&1; then
-    useradd -m -s /bin/bash -G sudo,audio,video,gpio,spi,i2c,plugdev,netdev,dialout devterm
+    useradd -m -s /bin/bash -G sudo,audio,video,input,gpio,spi,i2c,plugdev,netdev,dialout devterm
 fi
 echo 'devterm:devterm' | chpasswd
 echo 'root:devterm' | chpasswd
