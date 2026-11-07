@@ -1,0 +1,69 @@
+#!/bin/sh
+# Bring Wi-Fi back after resume.
+#
+# The sunxi MMC driver has no suspend/resume ops for the non-removable SDIO
+# card, so the kernel re-probes brcmfmac on every resume: phy0 disappears and
+# phy1 appears with a new netdev.  NetworkManager normally re-manages the new
+# device and reconnects by itself, but when the driver re-probe races its own
+# sleep handler it can stay stuck in state "asleep" ("nmcli networking on"
+# does not clear that), and then nothing activates until the machine reboots.
+#
+# So: let the firmware reload, wait a little, and if NM is asleep restart it
+# (the only thing that clears the state).  Otherwise nudge the device, then
+# restart as a last resort.
+case ${1:-} in
+    post) ;;
+    *) exit 0 ;;
+esac
+
+log() { logger -t devterm-wifi "$*"; }
+state() { nmcli -t -f STATE general 2>/dev/null; }
+
+# Polling budgets in seconds; the environment knobs let the recovery path be
+# exercised without waiting a minute.
+WAIT=${DEVT_WIFI_WAIT:-10}
+NUDGE=${DEVT_WIFI_NUDGE:-20}
+
+wait_connected() {
+    i=0
+    while [ "$i" -lt "$1" ]; do
+        [ "$(state)" = connected ] && return 0
+        i=$((i + 1))
+        sleep 1
+    done
+    return 1
+}
+
+# The firmware reload takes a few seconds; let it finish before judging.
+sleep 3
+
+if wait_connected "$WAIT"; then
+    log "resume: connected on its own"
+    exit 0
+fi
+
+if [ "$(state)" = asleep ]; then
+    log "resume: NetworkManager stuck asleep; restarting it"
+    systemctl restart NetworkManager
+    if wait_connected "$NUDGE"; then
+        log "resume: connected after NetworkManager restart"
+        exit 0
+    fi
+else
+    log "resume: state '$(state)'; re-managing wlan0"
+    nmcli device set wlan0 managed yes >/dev/null 2>&1
+    nmcli device connect wlan0 >/dev/null 2>&1
+    if wait_connected "$WAIT"; then
+        log "resume: connected after device connect"
+        exit 0
+    fi
+    log "resume: restarting NetworkManager"
+    systemctl restart NetworkManager
+    if wait_connected "$NUDGE"; then
+        log "resume: connected after NetworkManager restart"
+        exit 0
+    fi
+fi
+
+log "resume: Wi-Fi did not come back"
+exit 0

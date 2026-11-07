@@ -304,6 +304,17 @@ targets are not masked.  If suspend/resume is unreliable on your A04 revision,
 use the long press or `sudo poweroff`; deep suspend would require the Crust
 SCP firmware, which this image does not ship.
 
+Wi-Fi needs a nudge on resume: the SDIO card is re-probed as a new phy and
+NetworkManager can stay stuck in state `asleep`, where nothing reactivates it
+(`nmcli networking on` does not clear that state).  The system-sleep hook
+`/usr/lib/systemd/system-sleep/devterm-wifi-resume` waits a few seconds and
+restarts NetworkManager when that happens, so the link returns about ten
+seconds after waking.  Check it with:
+
+```sh
+journalctl -t devterm-wifi -b --no-pager
+```
+
 On battery, `devterm-idle-suspend.timer` suspends after 15 minutes without
 keyboard or mouse activity on the console tmux client.  It stays awake while a
 remote (SSH) session exists, while charging, while the load is above 0.75, and

@@ -73,6 +73,7 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          usr/local/bin/devterm-idle-suspend \
          usr/lib/systemd/system/devterm-idle-suspend.timer \
          usr/lib/systemd/system-sleep/devterm-resume-stamp \
+         usr/lib/systemd/system-sleep/devterm-wifi-resume \
          usr/bin/starship etc/starship.toml etc/profile.d/starship.sh \
          etc/skel/.config/yazi/theme.toml \
          etc/skel/.config/yazi/flavors/gruvbox-material.yazi/flavor.toml \
