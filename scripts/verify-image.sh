@@ -45,6 +45,8 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /usr/lib/systemd/system/devterm-idle-suspend.timer \
          /usr/lib/systemd/system-sleep/devterm-resume-stamp \
          /usr/lib/systemd/system-sleep/devterm-wifi-resume \
+         /usr/lib/systemd/system-sleep/devterm-sleep-screen \
+         /usr/local/bin/devterm-screen-restore \
          /usr/lib/systemd/system/devterm-tailscale-operator.service \
          /usr/bin/ly /etc/ly/config.lua /etc/pam.d/ly \
          /usr/local/sbin/devterm-ly-console \

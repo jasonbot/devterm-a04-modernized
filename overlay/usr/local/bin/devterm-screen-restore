@@ -1,0 +1,16 @@
+#!/bin/sh
+# Restore the panel brightness saved by the pre-suspend hook.
+# Run from a transient timer after resume, so the screen stays dark until the
+# system can actually respond to input again.
+bl=$(ls /sys/class/backlight/*/brightness 2>/dev/null | head -1)
+[ -n "$bl" ] || exit 0
+level=$(cat /run/devterm-brightness 2>/dev/null || true)
+case ${level:-} in
+    ''|*[!0-9]*) level=5 ;;
+esac
+max=$(cat "$(dirname "$bl")/max_brightness" 2>/dev/null || echo 9)
+case ${max:-} in ''|*[!0-9]*) max=9 ;; esac
+[ "$level" -gt "$max" ] && level=$max
+[ "$level" -lt 1 ] && level=1
+logger -t devterm-screen "restoring brightness to $level/$max"
+printf '%s\n' "$level" > "$bl"

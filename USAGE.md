@@ -304,6 +304,13 @@ targets are not masked.  If suspend/resume is unreliable on your A04 revision,
 use the long press or `sudo poweroff`; deep suspend would require the Crust
 SCP firmware, which this image does not ship.
 
+The panel is blanked before suspending and restored about three seconds after
+resume, so the last frame does not look like a live UI while the session is
+still thawing.  Both the screen restore and the Wi-Fi recovery below run from
+transient units: systemd-sleep holds `user.slice` frozen until its post hooks
+return, so anything slow done inline would make the restored screen
+unresponsive for that much longer.
+
 Wi-Fi needs a nudge on resume: the SDIO card is re-probed as a new phy and
 NetworkManager can stay stuck in state `asleep`, where nothing reactivates it
 (`nmcli networking on` does not clear that state).  The system-sleep hook

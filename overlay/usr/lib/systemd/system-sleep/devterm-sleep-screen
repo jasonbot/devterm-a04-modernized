@@ -1,0 +1,25 @@
+#!/bin/sh
+# Keep the panel dark while the machine is asleep and while it is still
+# waking, so the last frame never masquerades as a live UI on a frozen
+# session.
+set -u
+bl=$(ls /sys/class/backlight/*/brightness 2>/dev/null | head -1)
+[ -n "$bl" ] || exit 0
+case ${1:-} in
+    pre)
+        cat "$bl" > /run/devterm-brightness 2>/dev/null || echo 5 > /run/devterm-brightness
+        printf '0\n' > "$bl" 2>/dev/null || true
+        ;;
+    post)
+        # The sleep process must not block on this: schedule the restore a
+        # few seconds later, after user.slice is thawed.
+        # Transient timers default to AccuracySec=1min, which would leave the
+        # panel dark for up to a minute; pin it down.
+        if ! systemd-run --collect --unit=devterm-screen-restore --on-active=3 \
+                --timer-property=AccuracySec=100ms \
+                /usr/local/bin/devterm-screen-restore >/dev/null 2>&1; then
+            # Never leave the panel dark because a transient unit failed.
+            /usr/local/bin/devterm-screen-restore
+        fi
+        ;;
+esac

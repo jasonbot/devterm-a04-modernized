@@ -10,9 +10,21 @@
 #
 # So: let the firmware reload, wait a little, and if NM is asleep restart it
 # (the only thing that clears the state).  Otherwise nudge the device, then
-# restart as a last resort.
+# restart as a last resort.  The work runs from a transient unit started by
+# the post hook, so a stuck NetworkManager never freezes the session.
 case ${1:-} in
-    post) ;;
+    pre) exit 0 ;;
+    post)
+        # Never block the sleep process: it holds user.slice frozen until it
+        # exits, which is exactly the "screen is back but nothing responds"
+        # window.  Hand the recovery to a transient timer and return.
+        systemd-run --collect --unit=devterm-wifi-resume --on-active=2 \
+            --timer-property=AccuracySec=100ms \
+            /usr/lib/systemd/system-sleep/devterm-wifi-resume post-resume \
+            >/dev/null 2>&1 && exit 0
+        logger -t devterm-wifi "post: systemd-run failed; recovering inline"
+        ;;
+    post-resume) ;;
     *) exit 0 ;;
 esac
 
