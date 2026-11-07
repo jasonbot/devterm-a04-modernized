@@ -280,8 +280,9 @@ The image ships `/etc/tmux.conf`:
   does not fit: long SSIDs are cut before the icons, the battery and the time
 - clicking the status bar opens `nmtui-go` in a tmux popup via
   `sudo devterm-wifi`, except on a window name: that click selects the window
-- every interactive login attaches to the persistent tmux session `login`;
-  detaching and logging in again reattaches the same session
+- local console logins attach to the persistent tmux session `login`
+  (detaching and logging in again reattaches it); SSH logins stay plain
+  shells, join the session with `tmux new -A -s login`
 - `devterm-wifi status` and `devterm-tailscale-status` print the same
   one-line summaries for scripts; `devterm-battery` prints the battery
   segment

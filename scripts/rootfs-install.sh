@@ -74,9 +74,10 @@ fi
 if ! grep -q 'tmux new-session -A -s login' /etc/bash.bashrc 2>/dev/null; then
     cat >>/etc/bash.bashrc <<'EOF'
 
-# Attach interactive shells to the persistent "login" tmux session.
-if [ -z "${TMUX-}" ] && [ -n "${PS1-}" ] && [ -t 0 ] && \
-   command -v tmux >/dev/null 2>&1; then
+# Attach interactive shells to the persistent "login" tmux session, except
+# over SSH where a plain shell is expected.
+if [ -z "${TMUX-}" ] && [ -z "${SSH_CONNECTION-}" ] && [ -n "${PS1-}" ] && \
+   [ -t 0 ] && command -v tmux >/dev/null 2>&1; then
     exec tmux new-session -A -s login
 fi
 EOF

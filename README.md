@@ -15,7 +15,7 @@ the system makes the root filesystem use the rest of the card.
 - **Ly**, a text login screen, running inside kmscon.
 - **Starship** as the default prompt, using the image's Paper Mono Nerd
   Font/Powerline glyphs.
-- Login shells attach to a persistent tmux session named `login`.
+- Local console logins attach to a persistent tmux session named `login`; SSH logins do not.
 - The power button suspends the A04 (long press powers off).
 - **Paper Mono Nerd Font** at a 16 px / 8x16 cell size as the console font.
 - Every NerdFont from your font folder, installed for all programs.
