@@ -182,6 +182,28 @@ cha -h
 TERM=xterm-256color LIBGL_ALWAYS_SOFTWARE=1 /opt/carboxyl/carboxyl --help
 ```
 
+## Live-coding music: rustel
+
+`rustel` is the native Strudel engine: patterns, synths and samples without a
+browser.  It is installed from the upstream arm64 release at `/opt/rustel`
+with `/usr/local/bin/rustel` on `PATH`.
+
+```sh
+rustel studio                     # terminal editor, Ctrl+Enter updates
+rustel song.strudel --watch       # play, reload on every save
+rustel render song.strudel -o take.wav --duration 60
+rustel check song.strudel         # parse without sound
+rustel devices                    # ALSA and MIDI devices
+rustel doctor                     # DSP paths and buffer settings
+```
+
+Audio goes through ALSA to the AC200 codec; `rustel devices` lists the
+`alsa:default` output.  Studio is tuned for a graphical terminal — on the
+60-column kmscon console it runs, but the piano roll, mixer and theme chrome
+are cramped and colours are limited; the command-line modes (`--watch`,
+`render`, `check`) are the comfortable fit there.  Csound instruments need
+`--allow-csound` and a 6.x Csound installation (not shipped).
+
 ## Fullscreen DRM programs
 
 Software that talks to KMS/DRM directly (SDL's `kmsdrm` driver, ebitengine with

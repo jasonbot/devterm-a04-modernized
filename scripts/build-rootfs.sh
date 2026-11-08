@@ -57,6 +57,7 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          boot/extlinux/extlinux.conf etc/vconsole.conf \
          usr/local/share/fonts/nerd-fonts/PaperMonoNerdFont-Regular.otf \
          opt/carbonyl/carbonyl usr/local/bin/devterm-kiosk \
+         opt/rustel/rustel usr/local/bin/rustel \
          usr/bin/cha usr/bin/mancha usr/libexec/chawan/cgi-bin/ssl \
          usr/local/bin/carboxyl usr/local/bin/devterm-kiosk \
          usr/bin/kmscon usr/local/bin/nmtui-go \

@@ -22,7 +22,8 @@ fsck.ext4 -fn "$part"
 [ "$(e2label "$part")" = devterm-root ] || die "wrong ext4 label"
 for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /boot/extlinux/extlinux.conf /etc/vconsole.conf \
-         /opt/carbonyl/carbonyl /usr/bin/kmscon /etc/kmscon/kmscon.conf \
+         /opt/carbonyl/carbonyl /opt/rustel/rustel /usr/local/bin/rustel \
+         /usr/bin/kmscon /etc/kmscon/kmscon.conf \
          /usr/bin/cha /usr/bin/mancha /usr/libexec/chawan/cgi-bin/ssl \
          /usr/local/bin/carboxyl /usr/local/bin/devterm-kiosk \
          /usr/share/doc/kmscon/A04-GUARD \
@@ -176,7 +177,12 @@ STUB
     printf 'Charging\n' > "$tmp/idps/axp20x-battery/status"
     printf '%s' "$(idstub)" | grep -q 'SUSPEND' && \
         die "idle suspend fires while charging"
-    log "Ly runs on Cortex-A53; kmscon DRM 2D, Chawan, Yazi, nmtui-go, starship and devterm-battery: ok"
+    debugfs -R "dump /opt/rustel/rustel $tmp/rustel" "$part" >/dev/null 2>&1
+    chmod 755 "$tmp/rustel"
+    qemu-aarch64-static -cpu cortex-a53 -L "$ART/rootfs" \
+        "$tmp/rustel" --version 2>&1 | grep -q '^rustel ' || \
+        die "rustel does not run on Cortex-A53"
+    log "Ly runs on Cortex-A53; kmscon DRM 2D, Chawan, Yazi, nmtui-go, starship, devterm-battery and rustel: ok"
 else
     warn "qemu-aarch64-static or artifacts/rootfs missing; skipping arm64 smoke test"
 fi

@@ -10,6 +10,7 @@ CARBONYL_VER=0.0.3
 CHAWAN_VER=0.5.1
 KMS_VER=10.0.4
 NMTUI_GO_VER=0.2.7
+RUSTEL_VER=0.1.6
 VENDOR_BASE=https://raw.githubusercontent.com/clockworkpi/apt/main/debian
 
 download() {
@@ -55,6 +56,26 @@ if [ ! -x "$ART/carbonyl/carbonyl" ]; then
     chmod +x "$ART/carbonyl/carbonyl"
 fi
 log "Carbonyl: $(du -sh "$ART/carbonyl" | cut -f1)"
+
+# Rustel: the Strudel engine for the terminal.  The .sha256 asset is a bare
+# digest, not a sha256sum(1) file.
+if [ ! -x "$ART/rustel/rustel" ]; then
+    rustel_tar="rustel_v${RUSTEL_VER}_linux_arm64.tar.gz"
+    download "https://github.com/tzfm/rustel/releases/download/v${RUSTEL_VER}/${rustel_tar}" \
+        "$ART/src/${rustel_tar}"
+    download "https://github.com/tzfm/rustel/releases/download/v${RUSTEL_VER}/${rustel_tar}.sha256" \
+        "$ART/src/${rustel_tar}.sha256"
+    need sha256sum
+    need tar
+    expected=$(tr -d ' \r\n' < "$ART/src/${rustel_tar}.sha256")
+    actual=$(sha256sum "$ART/src/${rustel_tar}" | cut -d' ' -f1)
+    [ "$expected" = "$actual" ] || die "rustel checksum mismatch"
+    rm -rf "$ART/rustel"
+    mkdir -p "$ART/rustel"
+    tar -xzf "$ART/src/${rustel_tar}" -C "$ART/rustel"
+    chmod 755 "$ART/rustel/rustel"
+fi
+log "Rustel: $(du -sh "$ART/rustel" | cut -f1)"
 
 # Source for the additional terminal browser.  The build script does the
 # container build; caching the tarball here keeps it reproducible.

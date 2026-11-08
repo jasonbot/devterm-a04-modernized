@@ -312,6 +312,15 @@ fc-cache -f >/tmp/fontconfig.log 2>&1 || true
 
 install -m 755 "$PAYLOAD/nmtui-go/nmtui-go" /usr/local/bin/nmtui-go
 
+# Rustel: Strudel live-coding engine for the terminal (prebuilt arm64).
+if [ -x "$PAYLOAD/rustel/rustel" ]; then
+    rm -rf /opt/rustel
+    mkdir -p /opt/rustel
+    cp -a "$PAYLOAD"/rustel/. /opt/rustel/
+    chmod 755 /opt/rustel/rustel
+    ln -sf /opt/rustel/rustel /usr/local/bin/rustel
+fi
+
 # Optional: markdown/QR/ZPL printer built from tools/devterm-print.
 if [ -x "$PAYLOAD/devterm-print/devterm-print" ]; then
     install -m 755 "$PAYLOAD/devterm-print/devterm-print" /usr/local/bin/devterm-print

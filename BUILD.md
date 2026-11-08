@@ -83,6 +83,7 @@ make verify
 - ClockworkPi A04 kernel `devterm-kernel-current-cpi-a04_0.6_arm64.deb`
 - ClockworkPi audio/fan/gearbox/wiringPi/printer packages
 - Carbonyl `v0.0.3` arm64
+- Rustel `v0.1.6` arm64 (checksum-verified against its published `.sha256`)
 - Chawan `0.5.1` source and the kmscon `10.0.4` source
 - Debian 13 arm64 packages during the rootfs stage
 

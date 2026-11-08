@@ -27,6 +27,8 @@ the system makes the root filesystem use the rest of the card.
   tools can be installed from apt), themed with Gruvbox Material.
 - **devterm-print**, which prints QR codes, markdown and ZPL labels on the
   built-in thermal printer.
+- **rustel**, the native Strudel live-coding engine, for music in the
+  terminal.
 - **tmux** configured with a `Ctrl-a` prefix and a clickable Wi-Fi status
   section; the bar also shows live Tailscale, battery (Nerd Font icon) and
   the clock.
