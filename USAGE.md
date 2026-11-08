@@ -197,6 +197,11 @@ rustel devices                    # ALSA and MIDI devices
 rustel doctor                     # DSP paths and buffer settings
 ```
 
+Studio (`rustel studio`) is part of the same binary — nothing extra to
+install.  The first run creates a set under `~/.rustel/sets/<date>`;
+`Ctrl+Enter` or `F5` updates and plays, `F8` stops, `Ctrl+S` also updates
+(use those on the console, where `Ctrl+Enter` may not reach the program).
+
 Audio goes through ALSA to the AC200 codec; `rustel devices` lists the
 `alsa:default` output.  Studio is tuned for a graphical terminal — on the
 60-column kmscon console it runs, but the piano roll, mixer and theme chrome
