@@ -212,26 +212,29 @@ are cramped and colours are limited; the command-line modes (`--watch`,
 ## Graphical browser: devterm-web
 
 ```sh
-devterm-web https://example.com
+devterm-web https://example.com           # GNOME Web: address bar, tabs, menu
+devterm-web --kiosk https://example.com   # cog: no chrome at all
 ```
 
-Runs **cage**, the kiosk Wayland compositor, with exactly one client: **cog**,
-the WPE WebKit browser.  It goes through `devterm-kms`, so the login screen
-stops, the browser owns tty1, and Ly comes back when the session ends.  seatd
-provides the seat, and `devterm-web-session` turns the 480x1280 panel by 90°
-with `wlr-randr` to match `fbcon=rotate:1`; set `DEVT_WEB_TRANSFORM=90` (or
-`180`) if the picture comes up the wrong way round.
+Runs **cage**, the single-app Wayland compositor, on the console through
+`devterm-kms`: the login screen stops, the browser owns tty1, and Ly returns
+when it exits.  The default client is **GNOME Web** (WebKitGTK), a full browser
+with an address bar, tabs, history and a menu; `--kiosk` switches to **cog**
+(WPE WebKit), which has no chrome by design — there is nothing to enable there.
+seatd provides the seat, and the session turns the 480x1280 panel 90° with
+`wlr-randr` to match `fbcon=rotate:1`; set `DEVT_WEB_TRANSFORM=90` (or `180`)
+if the picture comes up the wrong way round.
 
-There is no window manager and cog has no quit key, so the escape hatch is a
-file:
+Ctrl+Alt+Q ends the session, and closing the last window does too.  Without a
+keyboard, from another terminal or over ssh:
 
 ```sh
-touch /tmp/devterm-web-exit      # from another terminal or over ssh
+touch /tmp/devterm-web-exit
 ```
 
-The session ends, cage exits and the login screen returns.  Rendering is WebKit
-through Mesa on the Mali GPU; the first paint is slow, and pages that need a
-lot of JavaScript will be sluggish on the A04.
+The first GNOME Web run asks whether to become the default browser — answer No.
+Rendering is WebKit through Mesa on the Mali GPU; the first paint is slow, and
+JavaScript-heavy pages will be sluggish on the A04.
 
 ## Fullscreen DRM programs
 

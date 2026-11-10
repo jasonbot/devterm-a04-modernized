@@ -72,6 +72,7 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          etc/profile.d/tmux-login.sh \
          usr/local/bin/devterm-battery usr/local/bin/devterm-power \
          usr/local/bin/devterm-web usr/local/bin/devterm-web-session \
+         usr/local/bin/devterm-web-quit usr/bin/epiphany \
          usr/bin/cage usr/bin/cog \
          usr/local/bin/devterm-kms \
          usr/local/bin/devterm-idle-suspend \

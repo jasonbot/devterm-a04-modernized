@@ -29,8 +29,8 @@ the system makes the root filesystem use the rest of the card.
   built-in thermal printer.
 - **rustel**, the native Strudel live-coding engine, for music in the
   terminal.
-- **devterm-web**, a graphical kiosk browser (cage + cog/WPE WebKit) on the
-  console.
+- **devterm-web**, a graphical browser on the console: cage + GNOME Web by
+  default, cage + cog with `--kiosk`.
 - **tmux** configured with a `Ctrl-a` prefix and a clickable Wi-Fi status
   section; the bar also shows live Tailscale, battery (Nerd Font icon) and
   the clock.

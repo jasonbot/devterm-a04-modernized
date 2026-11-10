@@ -1,13 +1,24 @@
 #!/bin/sh
-# devterm-web - full-screen graphical browser on the console.
+# devterm-web - graphical browser on the console.
+#
+#   devterm-web [URL]            full browser: GNOME Web (WebKitGTK)
+#   devterm-web --kiosk [URL]    kiosk mode: cage + cog (WPE WebKit)
 #
 # kmscon holds the DRM master while the login screen is up, so the browser goes
 # through devterm-kms: it stops the login screen, hands tty1 to the user and
-# restarts Ly when the browser exits.  cage is the kiosk Wayland compositor and
-# cog (WPE WebKit) is the single client it shows; seatd provides the seat.
+# restarts Ly when the browser exits.  cage is the single-app Wayland
+# compositor in both modes; seatd provides the seat.
 #
-# usage: devterm-web [URL]
+# Inside the session Ctrl+Alt+Q returns to the login screen, and closing the
+# last window works too.  Without a keyboard: touch /tmp/devterm-web-exit.
 set -eu
+mode=full
+case ${1:-} in
+    --kiosk|--cog)
+        mode=kiosk
+        shift
+        ;;
+esac
 url=${1:-https://example.com}
 
 # No logind session here, so Wayland needs a runtime dir of its own.
@@ -16,5 +27,9 @@ umask 077
 [ -d "$runtime" ] || mkdir -p "$runtime"
 export XDG_RUNTIME_DIR="$runtime"
 export XDG_SESSION_TYPE=wayland
+export DEVT_WEB_MODE="$mode"
 
-exec devterm-kms cage -d -- /usr/local/bin/devterm-web-session "$url"
+if [ "$mode" = kiosk ]; then
+    exec devterm-kms cage -d -- /usr/local/bin/devterm-web-session "$url"
+fi
+exec devterm-kms cage -- /usr/local/bin/devterm-web-session "$url"

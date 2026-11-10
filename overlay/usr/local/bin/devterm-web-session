@@ -5,9 +5,9 @@
 # rotates with fbcon=rotate:1 (90 degrees clockwise), and a Wayland compositor
 # needs the matching output transform.  DEVT_WEB_TRANSFORM overrides it.
 #
-# There is no window manager and cog has no quit key, so the escape hatch is
-# the file /tmp/devterm-web-exit: create it (from another terminal or over ssh)
-# and the session ends, handing the console back to the login screen.
+# Escape hatches, since cage is a kiosk compositor: Ctrl+Alt+Q is picked up by
+# devterm-web-quit, and touching /tmp/devterm-web-exit does the same from
+# another terminal or over ssh.
 set -eu
 transform=${DEVT_WEB_TRANSFORM:-270}
 if command -v wlr-randr >/dev/null 2>&1; then
@@ -17,14 +17,25 @@ if command -v wlr-randr >/dev/null 2>&1; then
     fi
 fi
 
+/usr/local/bin/devterm-web-quit &
+
 rm -f /tmp/devterm-web-exit
 (
     while [ ! -e /tmp/devterm-web-exit ]; do
         sleep 1
     done
     pkill -TERM -x cog 2>/dev/null || true
+    pkill -TERM -x epiphany 2>/dev/null || true
     sleep 2
-    pkill -KILL -x cog 2>/dev/null || true
+    pkill -KILL -x cage 2>/dev/null || true
 ) &
 
-exec cog "$@"
+case ${DEVT_WEB_MODE:-full} in
+    kiosk)
+        exec cog "$@"
+        ;;
+    *)
+        # GNOME Web keeps its state through dconf, which wants a session bus.
+        exec dbus-run-session -- sh -c 'exec epiphany "$@"' sh "$@"
+        ;;
+esac
