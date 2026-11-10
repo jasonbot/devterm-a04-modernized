@@ -42,6 +42,8 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /usr/lib/firmware/brcm/brcmfmac43456-sdio.clockwork,devterm-a04.txt \
          /usr/local/bin/devterm-wifi /usr/local/bin/devterm-tailscale-status \
          /usr/local/bin/devterm-battery /usr/local/bin/devterm-power \
+         /usr/local/bin/devterm-web /usr/local/bin/devterm-web-session \
+         /usr/bin/cage /usr/bin/cog \
          /usr/local/bin/devterm-kms \
          /usr/local/bin/devterm-idle-suspend \
          /usr/lib/systemd/system/devterm-idle-suspend.timer \

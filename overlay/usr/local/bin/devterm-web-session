@@ -1,0 +1,30 @@
+#!/bin/sh
+# Runs inside the cage session: rotate the panel output, then start the browser.
+#
+# The A04 panel is mounted 90 degrees from its native 480x1280 mode; the console
+# rotates with fbcon=rotate:1 (90 degrees clockwise), and a Wayland compositor
+# needs the matching output transform.  DEVT_WEB_TRANSFORM overrides it.
+#
+# There is no window manager and cog has no quit key, so the escape hatch is
+# the file /tmp/devterm-web-exit: create it (from another terminal or over ssh)
+# and the session ends, handing the console back to the login screen.
+set -eu
+transform=${DEVT_WEB_TRANSFORM:-270}
+if command -v wlr-randr >/dev/null 2>&1; then
+    out=$(wlr-randr 2>/dev/null | awk 'NF && $1 !~ /^ / { print $1; exit }')
+    if [ -n "$out" ]; then
+        wlr-randr --output "$out" --transform "$transform" >/dev/null 2>&1 || true
+    fi
+fi
+
+rm -f /tmp/devterm-web-exit
+(
+    while [ ! -e /tmp/devterm-web-exit ]; do
+        sleep 1
+    done
+    pkill -TERM -x cog 2>/dev/null || true
+    sleep 2
+    pkill -KILL -x cog 2>/dev/null || true
+) &
+
+exec cog "$@"

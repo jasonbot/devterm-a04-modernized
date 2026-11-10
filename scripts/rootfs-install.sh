@@ -312,6 +312,11 @@ fc-cache -f >/tmp/fontconfig.log 2>&1 || true
 
 install -m 755 "$PAYLOAD/nmtui-go/nmtui-go" /usr/local/bin/nmtui-go
 
+# Graphical kiosk browser: cage (Wayland kiosk compositor), cog (WPE WebKit),
+# seatd for the seat and wlr-randr to rotate the panel output.
+log "graphical kiosk browser"
+apt-get install -y --no-install-recommends cage cog seatd wlr-randr
+
 # Rustel: Strudel live-coding engine for the terminal (prebuilt arm64).
 if [ -x "$PAYLOAD/rustel/rustel" ]; then
     rm -rf /opt/rustel
@@ -378,6 +383,7 @@ enable_unit fstrim.timer
 enable_unit rfkill-unblock.service
 enable_unit devterm-socat.service
 enable_unit devterm-printer.service
+enable_unit seatd.service
 enable_unit devterm-fan-temp-daemon-a04.service
 enable_unit devterm-audio-patch.service
 enable_unit devterm-growroot.service

@@ -209,6 +209,30 @@ are cramped and colours are limited; the command-line modes (`--watch`,
 `render`, `check`) are the comfortable fit there.  Csound instruments need
 `--allow-csound` and a 6.x Csound installation (not shipped).
 
+## Graphical browser: devterm-web
+
+```sh
+devterm-web https://example.com
+```
+
+Runs **cage**, the kiosk Wayland compositor, with exactly one client: **cog**,
+the WPE WebKit browser.  It goes through `devterm-kms`, so the login screen
+stops, the browser owns tty1, and Ly comes back when the session ends.  seatd
+provides the seat, and `devterm-web-session` turns the 480x1280 panel by 90°
+with `wlr-randr` to match `fbcon=rotate:1`; set `DEVT_WEB_TRANSFORM=90` (or
+`180`) if the picture comes up the wrong way round.
+
+There is no window manager and cog has no quit key, so the escape hatch is a
+file:
+
+```sh
+touch /tmp/devterm-web-exit      # from another terminal or over ssh
+```
+
+The session ends, cage exits and the login screen returns.  Rendering is WebKit
+through Mesa on the Mali GPU; the first paint is slow, and pages that need a
+lot of JavaScript will be sluggish on the A04.
+
 ## Fullscreen DRM programs
 
 Software that talks to KMS/DRM directly (SDL's `kmsdrm` driver, ebitengine with

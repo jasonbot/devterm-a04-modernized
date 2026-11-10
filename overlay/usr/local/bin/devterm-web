@@ -1,0 +1,20 @@
+#!/bin/sh
+# devterm-web - full-screen graphical browser on the console.
+#
+# kmscon holds the DRM master while the login screen is up, so the browser goes
+# through devterm-kms: it stops the login screen, hands tty1 to the user and
+# restarts Ly when the browser exits.  cage is the kiosk Wayland compositor and
+# cog (WPE WebKit) is the single client it shows; seatd provides the seat.
+#
+# usage: devterm-web [URL]
+set -eu
+url=${1:-https://example.com}
+
+# No logind session here, so Wayland needs a runtime dir of its own.
+runtime=${XDG_RUNTIME_DIR:-/tmp/devterm-web-$(id -u)}
+umask 077
+[ -d "$runtime" ] || mkdir -p "$runtime"
+export XDG_RUNTIME_DIR="$runtime"
+export XDG_SESSION_TYPE=wayland
+
+exec devterm-kms cage -d -- /usr/local/bin/devterm-web-session "$url"

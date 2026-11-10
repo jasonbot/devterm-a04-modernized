@@ -23,6 +23,9 @@ fi
 user=${SUDO_USER:-devterm}
 home=$(getent passwd "$user" | cut -d: -f6)
 group=$(id -gn "$user")
+# Wayland compositors (and other session software) need this; systemd-run
+# starts with a clean environment, so pass it explicitly.
+runtime=${XDG_RUNTIME_DIR:-/run/user/$(id -u "$user")}
 
 exec 9>/run/devterm-kms.lock
 if ! flock -n 9; then
@@ -65,5 +68,6 @@ systemd-run --quiet --collect --wait \
     --property=WorkingDirectory="$PWD" \
     --setenv=HOME="$home" --setenv=USER="$user" --setenv=LOGNAME="$user" \
     --setenv=TERM=linux --setenv=PATH=/usr/local/bin:/usr/bin:/bin \
+    --setenv=XDG_RUNTIME_DIR="$runtime" \
     -- "$@" || rc=$?
 exit "$rc"

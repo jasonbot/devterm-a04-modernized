@@ -84,6 +84,8 @@ make verify
 - ClockworkPi audio/fan/gearbox/wiringPi/printer packages
 - Carbonyl `v0.0.3` arm64
 - Rustel `v0.1.6` arm64 (checksum-verified against its published `.sha256`)
+- cage, cog (WPE WebKit), seatd and wlr-randr from the Debian archive for
+  `devterm-web`
 - Chawan `0.5.1` source and the kmscon `10.0.4` source
 - Debian 13 arm64 packages during the rootfs stage
 
