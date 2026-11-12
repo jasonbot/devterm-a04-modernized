@@ -34,22 +34,24 @@
     fragment@2 {
         target = <&tcon_top>;
         __overlay__ {
-            tcon_top_hdmi_in: port@4 {
-                #address-cells = <1>;
-                #size-cells = <0>;
-                reg = <4>;
+            ports {
+                tcon_top_hdmi_in: port@4 {
+                    #address-cells = <1>;
+                    #size-cells = <0>;
+                    reg = <4>;
 
-                tcon_top_hdmi_in_tcon_tv: endpoint@0 {
-                    reg = <0>;
-                    remote-endpoint = <&tcon_tv_out_tcon_top>;
+                    tcon_top_hdmi_in_tcon_tv: endpoint@0 {
+                        reg = <0>;
+                        remote-endpoint = <&tcon_tv_out_tcon_top>;
+                    };
                 };
-            };
 
-            tcon_top_hdmi_out: port@5 {
-                reg = <5>;
+                tcon_top_hdmi_out: port@5 {
+                    reg = <5>;
 
-                tcon_top_hdmi_out_hdmi: endpoint {
-                    remote-endpoint = <&hdmi_in_tcon_top>;
+                    tcon_top_hdmi_out_hdmi: endpoint {
+                        remote-endpoint = <&hdmi_in_tcon_top>;
+                    };
                 };
             };
         };
