@@ -236,6 +236,28 @@ The first GNOME Web run asks whether to become the default browser — answer No
 Rendering is WebKit through Mesa on the Mali GPU; the first paint is slow, and
 JavaScript-heavy pages will be sluggish on the A04.
 
+## External display (micro-HDMI)
+
+The A04 has a micro-HDMI (type D) port, but the vendor device tree leaves it
+inert: `tcon_tv` is disabled, and TCON-TV is wired straight to the HDMI encoder
+instead of looping back through TCON-TOP.  The image merges
+`/etc/devterm/hdmi.dts` into the device tree at build time with `fdtoverlay`
+(the untouched vendor file is kept as `/boot/devterm-a04.dtb.vendor`), so the
+internal panel and an external display work together.
+
+Plug in a monitor; it appears as `/sys/class/drm/card0-HDMI-A-1`.  kmscon adds
+every connected display to the terminal, so the console mirrors to the HDMI
+screen as well.  `devterm-web` follows cage's output choice (`cage -m extend`
+spans both displays).
+
+Check and revert:
+
+```sh
+ls /sys/class/drm/
+fdtget -t s /boot/devterm-a04.dtb /soc/lcd-controller@6515000 status   # okay
+sudo cp /boot/devterm-a04.dtb.vendor /boot/devterm-a04.dtb             # revert
+```
+
 ## Fullscreen DRM programs
 
 Software that talks to KMS/DRM directly (SDL's `kmsdrm` driver, ebitengine with

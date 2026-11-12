@@ -1,0 +1,71 @@
+// Device-tree overlay: enable the A04's micro-HDMI output.
+//
+// The vendor DTB ships tcon_tv disabled and wires TCON-TV straight to the
+// HDMI encoder.  The H6 display pipeline documented for sun8i-r40-tcon-top is
+//
+//     mixer0 -> tcon-top -> tcon-tv -> tcon-top -> hdmi -> connector
+//
+// so the overlay enables tcon_tv (and i2s1, which carries HDMI audio), adds the
+// two TCON-TOP HDMI ports and re-links the endpoints to match.  With this the
+// internal panel and an external display both work.
+//
+// Applied at image build time by scripts/rootfs-install.sh with fdtoverlay;
+// the untouched vendor DTB is kept as /boot/devterm-a04.dtb.vendor.
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "clockwork,devterm-a04";
+
+    fragment@0 {
+        target = <&tcon_tv>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+    fragment@1 {
+        target = <&i2s1>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+    fragment@2 {
+        target = <&tcon_top>;
+        __overlay__ {
+            tcon_top_hdmi_in: port@4 {
+                #address-cells = <1>;
+                #size-cells = <0>;
+                reg = <4>;
+
+                tcon_top_hdmi_in_tcon_tv: endpoint@0 {
+                    reg = <0>;
+                    remote-endpoint = <&tcon_tv_out_tcon_top>;
+                };
+            };
+
+            tcon_top_hdmi_out: port@5 {
+                reg = <5>;
+
+                tcon_top_hdmi_out_hdmi: endpoint {
+                    remote-endpoint = <&hdmi_in_tcon_top>;
+                };
+            };
+        };
+    };
+
+    fragment@3 {
+        target = <&tcon_tv_out_tcon_top>;
+        __overlay__ {
+            remote-endpoint = <&tcon_top_hdmi_in_tcon_tv>;
+        };
+    };
+
+    fragment@4 {
+        target = <&hdmi_in_tcon_top>;
+        __overlay__ {
+            remote-endpoint = <&tcon_top_hdmi_out_hdmi>;
+        };
+    };
+};

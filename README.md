@@ -31,6 +31,8 @@ the system makes the root filesystem use the rest of the card.
   terminal.
 - **devterm-web**, a graphical browser on the console: cage + GNOME Web by
   default, cage + cog with `--kiosk`.
+- **External micro-HDMI display** support, via a device-tree overlay the
+  vendor DTB leaves disabled.
 - **tmux** configured with a `Ctrl-a` prefix and a clickable Wi-Fi status
   section; the bar also shows live Tailscale, battery (Nerd Font icon) and
   the clock.

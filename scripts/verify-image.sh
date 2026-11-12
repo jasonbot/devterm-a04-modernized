@@ -90,6 +90,9 @@ debugfs -R 'cat /boot/extlinux/extlinux.conf' "$part" 2>/dev/null | \
     grep -q 'mem_sleep_default=s2idle' || die "s2idle kernel parameter is missing"
 debugfs -R 'cat /etc/tmux.conf' "$part" 2>/dev/null | \
     grep -q 'devterm-battery' || die "tmux battery status is missing"
+debugfs -R "dump /boot/devterm-a04.dtb $tmp/dtb" "$part" >/dev/null 2>&1
+[ "$(fdtget -t s "$tmp/dtb" /soc/lcd-controller@6515000 status 2>/dev/null)" = okay ] || \
+    die "HDMI overlay is not applied (tcon_tv still disabled)"
 timers=$(debugfs -R 'ls -l /etc/systemd/system/timers.target.wants' "$part" 2>/dev/null)
 printf '%s\n' "$timers" | grep -q 'devterm-idle-suspend.timer' || \
     die "idle suspend timer is not enabled"

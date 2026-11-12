@@ -70,6 +70,27 @@ nmcli device status
 - U-Boot does not initialize the panel; serial is the reliable early console
 - root partition is plain ext4, so it can be edited from another Linux
 
+## HDMI
+
+- micro-HDMI (type D) connector; H6 `dw-hdmi` + `hdmi-phy`, driver built in
+  (`CONFIG_DRM_SUN4I_HDMI=y`)
+- the vendor DTB disables `tcon_tv` and links TCON-TV directly to the HDMI
+  encoder, which is not the documented H6 route
+  (`mixer0 -> TCON-TOP -> TCON-TV -> TCON-TOP -> HDMI`), so the connector never
+  registers
+- the image applies `/etc/devterm/hdmi.dts` with `fdtoverlay` at build time:
+  `tcon_tv` and `i2s1` enabled, TCON-TOP HDMI ports 4 and 5 added, endpoints
+  re-linked; the vendor DTB is kept as `/boot/devterm-a04.dtb.vendor`
+- kmscon mirrors the console to every connected display
+
+Useful checks:
+
+```sh
+ls /sys/class/drm/
+fdtget -t s /boot/devterm-a04.dtb /soc/lcd-controller@6515000 status
+dmesg | grep -iE 'dw-hdmi|tcon'
+```
+
 ## SD card
 
 The image is a 4 GiB MBR disk.  `devterm-growroot.service` expands the last
