@@ -1,0 +1,46 @@
+#!/bin/sh
+# devterm-hdmi on|off|status - choose the device tree used at the next boot.
+#
+# The A04's micro-HDMI output is disabled in the vendor device tree, and
+# /boot/devterm-a04.dtb.hdmi carries the overlay that fixes the TCON-TOP graph
+# and enables it.  HDMI stays opt-in because kmscon mirrors one console to
+# every connected display and shrinks it to the smallest, and the HDMI
+# connector reports "connected" even with nothing attached - leaving it on
+# costs the internal panel 64 of its 160 columns.
+set -eu
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo -n "$0" "$@"
+fi
+
+dtb=/boot/devterm-a04.dtb
+enabled=$dtb.hdmi
+vendor=$dtb.vendor
+
+case ${1:-status} in
+    status)
+        if [ ! -f "$dtb" ]; then
+            echo "unknown (no $dtb)"
+        elif [ -f "$enabled" ] && cmp -s "$dtb" "$enabled"; then
+            echo "on (HDMI connector enabled at the next boot)"
+        elif [ -f "$vendor" ] && cmp -s "$dtb" "$vendor"; then
+            echo "off (vendor device tree: no HDMI connector)"
+        else
+            echo "custom ($dtb differs from both shipped trees)"
+        fi
+        ;;
+    on)
+        [ -f "$enabled" ] || { echo "devterm-hdmi: $enabled is missing" >&2; exit 1; }
+        install -m 644 "$enabled" "$dtb"
+        echo "HDMI enabled; reboot to apply.  Note: the console shrinks to the"
+        echo "smallest display while the connector exists (devterm-hdmi off to undo)."
+        ;;
+    off)
+        [ -f "$vendor" ] || { echo "devterm-hdmi: $vendor is missing" >&2; exit 1; }
+        install -m 644 "$vendor" "$dtb"
+        echo "HDMI disabled; reboot to apply."
+        ;;
+    *)
+        echo "usage: devterm-hdmi on|off|status" >&2
+        exit 2
+        ;;
+esac

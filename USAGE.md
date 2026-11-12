@@ -238,24 +238,31 @@ JavaScript-heavy pages will be sluggish on the A04.
 
 ## External display (micro-HDMI)
 
-The A04 has a micro-HDMI (type D) port, but the vendor device tree leaves it
-inert: `tcon_tv` is disabled, and TCON-TV is wired straight to the HDMI encoder
-instead of looping back through TCON-TOP.  The image merges
-`/etc/devterm/hdmi.dts` into the device tree at build time with `fdtoverlay`
-(the untouched vendor file is kept as `/boot/devterm-a04.dtb.vendor`), so the
-internal panel and an external display work together.
+The A04 has a micro-HDMI (type D) port that the vendor device tree leaves
+inert: `tcon_tv` is disabled and TCON-TV is wired straight to the HDMI encoder
+instead of looping back through TCON-TOP.  The image ships the fixed tree as
+`/boot/devterm-a04.dtb.hdmi`; HDMI is **opt-in**:
 
-Plug in a monitor; it appears as `/sys/class/drm/card0-HDMI-A-1`.  kmscon adds
-every connected display to the terminal, so the console mirrors to the HDMI
-screen as well.  `devterm-web` follows cage's output choice (`cage -m extend`
-spans both displays).
+```sh
+sudo devterm-hdmi on       # use the HDMI device tree at the next boot
+sudo devterm-hdmi off      # back to the vendor tree (the default)
+sudo devterm-hdmi status
+```
 
-Check and revert:
+It is opt-in because kmscon drives one console and mirrors it to every
+connected display, sizing it to the smallest, and the HDMI connector reports
+"connected" even with no cable plugged in — leaving it enabled costs the
+internal panel 64 of its 160 columns.  With it off, the panel runs at its full
+160x29.
+
+With HDMI enabled, the connector appears as `/sys/class/drm/card0-HDMI-A-1` and
+both screens work; the console is sized to the smaller display.  For a second
+screen at native resolution on both, use a compositor instead of the console
+(`devterm-web` runs cage, which has `-m extend`).
 
 ```sh
 ls /sys/class/drm/
-fdtget -t s /boot/devterm-a04.dtb /soc/lcd-controller@6515000 status   # okay
-sudo cp /boot/devterm-a04.dtb.vendor /boot/devterm-a04.dtb             # revert
+fdtget -t s /boot/devterm-a04.dtb.hdmi /soc/lcd-controller@6515000 status   # okay
 ```
 
 ## Fullscreen DRM programs

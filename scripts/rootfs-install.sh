@@ -294,14 +294,16 @@ cp "/boot/vmlinuz-${KVER}" /boot/Image
 cp "/boot/dtb-${KVER}/allwinner/sun50i-h6-clockworkpi-a04.dtb" /boot/devterm-a04.dtb
 
 # The vendor DTB disables tcon_tv and wires TCON-TV straight to the HDMI
-# encoder; the H6 pipeline loops back through TCON-TOP.  Merge the overlay so
-# the micro-HDMI port drives a second display alongside the internal panel.
+# encoder; the H6 pipeline loops back through TCON-TOP.  Build the fixed tree
+# as an alternative and keep it opt-in: kmscon mirrors one console to every
+# connected display and shrinks it to the smallest, and the HDMI connector
+# reads "connected" even with no cable, which would cost the panel 64 columns.
 if [ -f /etc/devterm/hdmi.dts ]; then
     log "hdmi overlay"
     apt-get install -y --no-install-recommends device-tree-compiler
     cp -a /boot/devterm-a04.dtb /boot/devterm-a04.dtb.vendor
     dtc -@ -q -I dts -O dtb -o /tmp/hdmi.dtbo /etc/devterm/hdmi.dts
-    fdtoverlay -i /boot/devterm-a04.dtb.vendor -o /boot/devterm-a04.dtb /tmp/hdmi.dtbo
+    fdtoverlay -i /boot/devterm-a04.dtb.vendor -o /boot/devterm-a04.dtb.hdmi /tmp/hdmi.dtbo
     rm -f /tmp/hdmi.dtbo
 fi
 [ -s "/boot/initrd.img-${KVER}" ] || update-initramfs -c -k "$KVER"

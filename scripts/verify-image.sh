@@ -43,6 +43,7 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /usr/local/bin/devterm-wifi /usr/local/bin/devterm-tailscale-status \
          /usr/local/bin/devterm-battery /usr/local/bin/devterm-power \
          /usr/local/bin/devterm-web /usr/local/bin/devterm-web-session \
+         /usr/local/bin/devterm-hdmi \
          /usr/local/bin/devterm-web-quit /usr/bin/epiphany \
          /usr/bin/cage /usr/bin/cog \
          /usr/local/bin/devterm-kms \
@@ -91,8 +92,11 @@ debugfs -R 'cat /boot/extlinux/extlinux.conf' "$part" 2>/dev/null | \
 debugfs -R 'cat /etc/tmux.conf' "$part" 2>/dev/null | \
     grep -q 'devterm-battery' || die "tmux battery status is missing"
 debugfs -R "dump /boot/devterm-a04.dtb $tmp/dtb" "$part" >/dev/null 2>&1
-[ "$(fdtget -t s "$tmp/dtb" /soc/lcd-controller@6515000 status 2>/dev/null)" = okay ] || \
-    die "HDMI overlay is not applied (tcon_tv still disabled)"
+debugfs -R "dump /boot/devterm-a04.dtb.hdmi $tmp/dtb.hdmi" "$part" >/dev/null 2>&1
+[ "$(fdtget -t s "$tmp/dtb" /soc/lcd-controller@6515000 status 2>/dev/null)" = disabled ] || \
+    die "default device tree should keep the HDMI connector off"
+[ "$(fdtget -t s "$tmp/dtb.hdmi" /soc/lcd-controller@6515000 status 2>/dev/null)" = okay ] || \
+    die "HDMI device tree is missing tcon_tv"
 timers=$(debugfs -R 'ls -l /etc/systemd/system/timers.target.wants' "$part" 2>/dev/null)
 printf '%s\n' "$timers" | grep -q 'devterm-idle-suspend.timer' || \
     die "idle suspend timer is not enabled"

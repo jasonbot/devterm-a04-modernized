@@ -78,9 +78,13 @@ nmcli device status
   encoder, which is not the documented H6 route
   (`mixer0 -> TCON-TOP -> TCON-TV -> TCON-TOP -> HDMI`), so the connector never
   registers
-- the image applies `/etc/devterm/hdmi.dts` with `fdtoverlay` at build time:
-  `tcon_tv` and `i2s1` enabled, TCON-TOP HDMI ports 4 and 5 added, endpoints
-  re-linked; the vendor DTB is kept as `/boot/devterm-a04.dtb.vendor`
+- the image builds the fixed tree as `/boot/devterm-a04.dtb.hdmi` from
+  `/etc/devterm/hdmi.dts` (`tcon_tv` and `i2s1` enabled, TCON-TOP HDMI ports 4
+  and 5 added, endpoints re-linked) and keeps the vendor tree as both the
+  default `/boot/devterm-a04.dtb` and `/boot/devterm-a04.dtb.vendor`
+- `sudo devterm-hdmi on|off` swaps the boot tree; it is opt-in because kmscon
+  mirrors one console to all connected displays and shrinks it to the smallest,
+  and the connector reads "connected" with no cable (the panel loses 64 columns)
 - kmscon mirrors the console to every connected display
 
 Useful checks:
