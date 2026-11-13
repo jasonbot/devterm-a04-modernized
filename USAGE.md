@@ -43,7 +43,8 @@ right.  This comes from `/etc/ly/config.lua`: `battery_id` reads
 `/sys/class/power_supply/axp20x-battery/capacity`, and a command-backed
 `custom_labels` entry runs `/usr/local/bin/devterm-wifi status` a few times a
 minute.  Behind the box, a greyscale starburst fires from the middle of the
-screen for three seconds every 45 seconds (`/etc/ly/starburst.lua`, wired up by
+screen for three seconds every 45 seconds and then flickers out over the next
+second and a half (`/etc/ly/starburst.lua`, wired up by
 `animation = "lua"`).
 
 Change both:

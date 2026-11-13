@@ -1,6 +1,7 @@
 -- Greyscale flame starburst, fired from the middle of the screen.
 -- One three-second burst every 45 seconds; the rest of the time it draws
--- nothing, so the login screen stays quiet.
+-- nothing, so the login screen stays quiet.  The last part of the burst thins
+-- out and flickers away instead of stopping all at once.
 --
 -- Ly calls draw() once per frame and hands us the "ly" table described in
 -- /etc/ly/example.lua: ly.width, ly.height, ly.clock() (microseconds) and
@@ -10,7 +11,7 @@ local BG = 0x00241F31       -- must match bg in /etc/ly/config.lua
 local BURST_US = 3000000
 local PERIOD_US = 45000000
 local FIRST_US = 1000000    -- first burst shortly after the screen appears
-local FADE_US = 600000      -- burn out over the last part of the burst
+local TAIL_US = 1400000     -- flicker-out at the end of the burst
 local EMIT_PER_SEC = 1100
 local MAX_PART = 900
 
@@ -61,19 +62,25 @@ function draw()
 
     if burst_at < 0 then return end
     local t = now - burst_at
-    if t >= BURST_US then
+    if t >= BURST_US + TAIL_US then
         burst_at = -1
         return
     end
 
-    emit_carry = emit_carry + EMIT_PER_SEC * dt
+    -- Feed the fire, easing off over the tail so it dies down instead of
+    -- shutting off mid-flame.
+    local tail = clamp((BURST_US + TAIL_US - t) / TAIL_US, 0, 1)
+    local feed = 0
+    if t <= BURST_US then
+        feed = clamp((BURST_US - t) / TAIL_US, 0, 1)
+    end
+    emit_carry = emit_carry + EMIT_PER_SEC * dt * feed
     local n = math.floor(emit_carry)
     emit_carry = emit_carry - n
     if n > MAX_PART then n = MAX_PART end
     emit(now, n)
 
     local cx, cy = w / 2, h / 2
-    local fadeout = clamp((BURST_US - t) / FADE_US, 0, 1)
 
     for i = 1, MAX_PART do
         local born = p_born[i]
@@ -89,20 +96,31 @@ function draw()
                 -- it slightly upwards like a flame
                 local y = cy + math.sin(a) * r * 0.5 - age * 1.5
                 if x >= 0 and x < w and y >= 0 and y < h then
-                    local g = p_grey[i] * (1 - age / life) * fadeout *
-                        (0.65 + 0.35 * math.random())
-                    g = math.floor(clamp(g, 24, 255))
-                    local ch = 0x2591
-                    if g > 200 then
-                        ch = 0x2588
-                    elseif g > 120 then
-                        ch = 0x2593
+                    local g = p_grey[i] * (1 - age / life) *
+                        (0.55 + 0.45 * math.random())
+                    local keep = true
+                    if t > BURST_US then
+                        -- embers wink out one by one as the tail runs down
+                        if math.random() > tail * tail then
+                            keep = false
+                        else
+                            g = g * tail
+                        end
                     end
-                    local ix, iy = math.floor(x), math.floor(y)
-                    ly.putCell(ch, g * 0x010101, BG, ix, iy)
-                    ndrawn = ndrawn + 1
-                    dx[ndrawn] = ix
-                    dy[ndrawn] = iy
+                    if keep then
+                        g = math.floor(clamp(g, 24, 255))
+                        local ch = 0x2591
+                        if g > 200 then
+                            ch = 0x2588
+                        elseif g > 120 then
+                            ch = 0x2593
+                        end
+                        local ix, iy = math.floor(x), math.floor(y)
+                        ly.putCell(ch, g * 0x010101, BG, ix, iy)
+                        ndrawn = ndrawn + 1
+                        dx[ndrawn] = ix
+                        dy[ndrawn] = iy
+                    end
                 end
             end
         end
