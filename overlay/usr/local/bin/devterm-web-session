@@ -30,12 +30,24 @@ rm -f /tmp/devterm-web-exit
     pkill -KILL -x cage 2>/dev/null || true
 ) &
 
+# Run the browser as a child rather than exec'ing it: cage does not always
+# notice that its only client has gone, leaving the app as a zombie and the
+# compositor (and devterm-kms) waiting forever.  When the browser exits - the
+# window closed, a crash, or the quit chord - tear the session down ourselves.
 case ${DEVT_WEB_MODE:-full} in
     kiosk)
-        exec cog "$@"
+        cog "$@" &
         ;;
     *)
         # GNOME Web keeps its state through dconf, which wants a session bus.
-        exec dbus-run-session -- sh -c 'exec epiphany "$@"' sh "$@"
+        dbus-run-session -- sh -c 'exec epiphany "$@"' sh "$@" &
         ;;
 esac
+browser=$!
+
+rc=0
+wait "$browser" || rc=$?
+pkill -TERM -x cage 2>/dev/null || true
+sleep 1
+pkill -KILL -x cage 2>/dev/null || true
+exit "$rc"
