@@ -92,7 +92,7 @@ ly = {
     -- Primary battery is usually BAT0 or BAT1
     -- If set to null, battery status won't be shown
     -- Unused on FreeBSD (a sysctl is used there)
-    battery_id = nil,
+    battery_id = "axp20x-battery",
 
     -- Background color id
     bg = 0x00241F31,
@@ -204,10 +204,10 @@ ly = {
     corner_bottom_right = "labels",
 
     -- Top left
-    corner_top_left = "shutdown,restart,britup,britdown,password",
+    corner_top_left = "shutdown,restart,britup,britdown,password,battery",
 
     -- Top right
-    corner_top_right = "clock",
+    corner_top_right = "lbl:wifi,clock",
 
     -- For custom binds: the horizontal limit in characters for each
     -- line of custom binds before moving on to the next.
@@ -489,15 +489,14 @@ ly = {
         },
     },
 
-    -- custom_labels = {
-    --     {
-    --         -- Declare a label with an ID. This ID should be unique across all labels.
-    --         label = "kernel",
-    --         cmd = "uname -srn",
-    --         -- Optional, defaulting to 0.
-    --         -- In frames, the time to re-run the command and update the label.
-    --         -- If 0, only run once and do not refresh afterwards
-    --         refresh = 0,
-    --     },
-    -- }
+    custom_labels = {
+        {
+            -- Wi-Fi summary in the top-right corner, next to the clock.
+            -- devterm-wifi status is the same line the tmux bar uses.
+            label = "wifi",
+            cmd = "/usr/local/bin/devterm-wifi status",
+            -- Frames between refreshes; roughly ten seconds at Ly's tick rate.
+            refresh = 600,
+        },
+    }
 }
