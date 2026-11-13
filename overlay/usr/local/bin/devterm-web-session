@@ -9,6 +9,11 @@
 # devterm-web-quit, and touching /tmp/devterm-web-exit does the same from
 # another terminal or over ssh.
 set -eu
+mode=full
+if [ "${1:-}" = --kiosk ]; then
+    mode=kiosk
+    shift
+fi
 transform=${DEVT_WEB_TRANSFORM:-270}
 if command -v wlr-randr >/dev/null 2>&1; then
     out=$(wlr-randr 2>/dev/null | awk 'NF && $1 !~ /^ / { print $1; exit }')
@@ -34,7 +39,7 @@ rm -f /tmp/devterm-web-exit
 # notice that its only client has gone, leaving the app as a zombie and the
 # compositor (and devterm-kms) waiting forever.  When the browser exits - the
 # window closed, a crash, or the quit chord - tear the session down ourselves.
-case ${DEVT_WEB_MODE:-full} in
+case $mode in
     kiosk)
         cog "$@" &
         ;;

@@ -27,9 +27,13 @@ umask 077
 [ -d "$runtime" ] || mkdir -p "$runtime"
 export XDG_RUNTIME_DIR="$runtime"
 export XDG_SESSION_TYPE=wayland
-export DEVT_WEB_MODE="$mode"
 
+# sudo starts devterm-kms with a clean environment, so the mode travels as an
+# argument; the transform is set with env(1) for the same reason.
+transform=${DEVT_WEB_TRANSFORM:-270}
 if [ "$mode" = kiosk ]; then
-    exec devterm-kms cage -d -- /usr/local/bin/devterm-web-session "$url"
+    exec devterm-kms env DEVT_WEB_TRANSFORM="$transform" \
+        cage -d -- /usr/local/bin/devterm-web-session --kiosk "$url"
 fi
-exec devterm-kms cage -- /usr/local/bin/devterm-web-session "$url"
+exec devterm-kms env DEVT_WEB_TRANSFORM="$transform" \
+    cage -- /usr/local/bin/devterm-web-session "$url"
