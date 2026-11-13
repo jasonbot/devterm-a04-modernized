@@ -36,6 +36,14 @@ devterm / devterm
 root    / devterm
 ```
 
+The login screen shows the same live status as the tmux bar: the F-key hints
+and the battery charge (`BAT: 57%`) along the top-left edge, and the clock and
+the Wi-Fi summary (`SSID signal%`, or `Wi-Fi: off`/`disconnected`) at the top
+right.  This comes from `/etc/ly/config.lua`: `battery_id` reads
+`/sys/class/power_supply/axp20x-battery/capacity`, and a command-backed
+`custom_labels` entry runs `/usr/local/bin/devterm-wifi status` a few times a
+minute.
+
 Change both:
 
 ```sh

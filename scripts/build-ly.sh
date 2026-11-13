@@ -52,6 +52,11 @@ fi
 if ! grep -q "kmscon's PTY does not implement" "$LY_SRC/ly-core/src/interop.zig"; then
     patch -d "$LY_SRC" -p1 <"$ROOT/patches/ly-lock-state.patch"
 fi
+# LuaJIT on aarch64 can only use GC pointers below 2^47, but this kernel hands
+# out mmap addresses above that, which silently disables the Lua config.
+if ! grep -q "lowmem.LowMem" "$LY_SRC/ly-core/src/root.zig"; then
+    patch -d "$LY_SRC" -p1 <"$ROOT/patches/ly-lua-lowmem.patch"
+fi
 
 log "building Ly for arm64 (first build can take several minutes)"
 podman run --rm --arch arm64 --userns=keep-id --user "$(id -u):$(id -g)" \

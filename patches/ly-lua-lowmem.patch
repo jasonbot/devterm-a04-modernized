@@ -1,0 +1,88 @@
+diff --git a/ly-core/src/lowmem.zig b/ly-core/src/lowmem.zig
+new file mode 100644
+index 0000000..cfc964e
+--- /dev/null
++++ b/ly-core/src/lowmem.zig
+@@ -0,0 +1,44 @@
++const std = @import("std");
++const builtin = @import("builtin");
++
++/// LuaJIT's GC64 mode (forced on aarch64) stores GC pointers in 47 bits, but a
++/// kernel with a 48-bit user address space can hand out mmap addresses above
++/// that limit.  lua_newstate() then rejects the allocation as out of range and
++/// reports it as a memory error, so Ly would silently fall back to the built-in
++/// defaults.  Serve the Lua state from an explicitly hinted mapping below 2^47.
++pub const LowMem = struct {
++    const size = 16 * 1024 * 1024;
++    const limit = 1 << 47;
++
++    mapping: ?[]align(std.heap.page_size_min) u8 = null,
++    fixed: std.heap.FixedBufferAllocator = undefined,
++    fallback: std.mem.Allocator,
++
++    pub fn init(fallback: std.mem.Allocator) LowMem {
++        var self: LowMem = .{ .fallback = fallback };
++        if (comptime builtin.target.cpu.arch == .aarch64) {
++            const hint: [*]align(std.heap.page_size_min) u8 = @ptrFromInt(limit / 2);
++            if (std.posix.mmap(hint, size, .{ .READ = true, .WRITE = true }, .{
++                .TYPE = .PRIVATE,
++                .ANONYMOUS = true,
++            }, -1, 0)) |region| {
++                if (@intFromPtr(region.ptr) < limit) {
++                    self.mapping = region;
++                    self.fixed = .init(region);
++                    return self;
++                }
++                std.posix.munmap(region);
++            } else |_| {}
++        }
++        return self;
++    }
++
++    pub fn allocator(self: *LowMem) std.mem.Allocator {
++        return if (self.mapping != null) self.fixed.allocator() else self.fallback;
++    }
++
++    pub fn deinit(self: *LowMem) void {
++        if (self.mapping) |mapping| std.posix.munmap(mapping);
++        self.mapping = null;
++    }
++};
+diff --git a/ly-core/src/root.zig b/ly-core/src/root.zig
+index e64f71c..29e9a7c 100644
+--- a/ly-core/src/root.zig
++++ b/ly-core/src/root.zig
+@@ -9,6 +9,7 @@ pub const UidRange = @import("UidRange.zig");
+ pub const LogFile = @import("LogFile.zig");
+ pub const SharedError = @import("SharedError.zig");
+ pub const custom = @import("custom.zig");
++pub const lowmem = @import("lowmem.zig");
+ 
+ pub fn Parser(comptime T: type) type {
+     return union(enum) {
+@@ -131,11 +132,12 @@ pub fn LuaParser(comptime Struct: type) type {
+             var arena = std.heap.ArenaAllocator.init(allocator);
+             const arena_alloc = arena.allocator();
+ 
+-            const data = parseLua(arena_alloc, path) catch load_error: {
++            var maybe_load_error: ?anyerror = null;
++            const data = parseLua(arena_alloc, path) catch |err| load_error: {
++                maybe_load_error = err;
+                 break :load_error Struct{};
+             };
+ 
+-            var maybe_load_error: ?anyerror = null;
+             if (global_errors.items.len != 0) {
+                 maybe_load_error = error.InvalidConfig;
+             }
+@@ -153,7 +155,9 @@ pub fn LuaParser(comptime Struct: type) type {
+             allocator: std.mem.Allocator,
+             path: []const u8,
+         ) !Struct {
+-            var lua: *Lua = try .init(allocator);
++            var low = lowmem.LowMem.init(allocator);
++            defer low.deinit();
++            var lua: *Lua = try .init(low.allocator());
+             defer lua.deinit();
+ 
+             lua.openBase();
