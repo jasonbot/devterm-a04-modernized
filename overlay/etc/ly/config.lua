@@ -43,7 +43,7 @@ ly = {
     -- gameoflife -> John Conway's Game of Life
     -- dur -> .dur file format (https://github.com/cmang/durdraw/tree/master)
     -- lua -> user-made animation written in LuaJIT
-    animation = "matrix",
+    animation = "lua",
 
     -- Delay between each animation frame in milliseconds
     animation_frame_delay = 40,
@@ -368,7 +368,7 @@ ly = {
     logout_cmd = nil,
 
     -- The file pointing to the Lua file to be used when using the Lua animation option
-    lua_animation_file = "/etc/ly/example.lua",
+    lua_animation_file = "/etc/ly/starburst.lua",
 
     -- General log file path
     -- If null, syslog will be used instead

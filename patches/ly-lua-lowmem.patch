@@ -1,9 +1,9 @@
 diff --git a/ly-core/src/lowmem.zig b/ly-core/src/lowmem.zig
 new file mode 100644
-index 0000000..cfc964e
+index 0000000..4bc3e77
 --- /dev/null
 +++ b/ly-core/src/lowmem.zig
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,56 @@
 +const std = @import("std");
 +const builtin = @import("builtin");
 +
@@ -11,13 +11,17 @@ index 0000000..cfc964e
 +/// kernel with a 48-bit user address space can hand out mmap addresses above
 +/// that limit.  lua_newstate() then rejects the allocation as out of range and
 +/// reports it as a memory error, so Ly would silently fall back to the built-in
-+/// defaults.  Serve the Lua state from an explicitly hinted mapping below 2^47.
++/// defaults (config.lua) or fail to run a Lua animation.  Serve Lua's memory
++/// from an explicitly hinted mapping below 2^47 instead.
++///
++/// The inner FixedBufferAllocator is heap allocated so the allocator returned
++/// by allocator() stays valid when this struct is copied.
 +pub const LowMem = struct {
-+    const size = 16 * 1024 * 1024;
++    const size = 64 * 1024 * 1024;
 +    const limit = 1 << 47;
 +
 +    mapping: ?[]align(std.heap.page_size_min) u8 = null,
-+    fixed: std.heap.FixedBufferAllocator = undefined,
++    fixed: ?*std.heap.FixedBufferAllocator = null,
 +    fallback: std.mem.Allocator,
 +
 +    pub fn init(fallback: std.mem.Allocator) LowMem {
@@ -29,22 +33,30 @@ index 0000000..cfc964e
 +                .ANONYMOUS = true,
 +            }, -1, 0)) |region| {
 +                if (@intFromPtr(region.ptr) < limit) {
++                    const fixed = fallback.create(std.heap.FixedBufferAllocator) catch {
++                        std.posix.munmap(region);
++                        return self;
++                    };
++                    fixed.* = .init(region);
 +                    self.mapping = region;
-+                    self.fixed = .init(region);
-+                    return self;
++                    self.fixed = fixed;
++                } else {
++                    std.posix.munmap(region);
 +                }
-+                std.posix.munmap(region);
 +            } else |_| {}
 +        }
 +        return self;
 +    }
 +
-+    pub fn allocator(self: *LowMem) std.mem.Allocator {
-+        return if (self.mapping != null) self.fixed.allocator() else self.fallback;
++    pub fn allocator(self: *const LowMem) std.mem.Allocator {
++        if (self.fixed) |fixed| return fixed.allocator();
++        return self.fallback;
 +    }
 +
 +    pub fn deinit(self: *LowMem) void {
++        if (self.fixed) |fixed| self.fallback.destroy(fixed);
 +        if (self.mapping) |mapping| std.posix.munmap(mapping);
++        self.fixed = null;
 +        self.mapping = null;
 +    }
 +};
@@ -86,3 +98,51 @@ index e64f71c..29e9a7c 100644
              defer lua.deinit();
  
              lua.openBase();
+diff --git a/src/animations/Lua.zig b/src/animations/Lua.zig
+index bb4d406..52f1993 100644
+--- a/src/animations/Lua.zig
++++ b/src/animations/Lua.zig
+@@ -9,6 +9,7 @@ const InfoLine = @import("../components/InfoLine.zig");
+ const Lang = @import("../config/Lang.zig");
+ 
+ const zlua = ly_ui.ly_core.zlua;
++const lowmem = ly_ui.ly_core.lowmem;
+ 
+ const ly_lua = @embedFile("ly.lua");
+ 
+@@ -24,6 +25,7 @@ height: usize,
+ margin: usize,
+ io: std.Io,
+ animation_delay: u16,
++low: lowmem.LowMem,
+ 
+ info_line: *InfoLine,
+ fg: u32,
+@@ -50,8 +52,10 @@ pub fn init(
+     lang: Lang,
+     full_color: bool,
+ ) !Lua {
++    var low_mem = lowmem.LowMem.init(alloc);
++    errdefer low_mem.deinit();
+     var self: Lua = .{
+-        .lua = try zlua.Lua.init(alloc),
++        .lua = try zlua.Lua.init(low_mem.allocator()),
+         .allocator = alloc,
+         .terminal_buffer = buf,
+         .instance = null,
+@@ -61,6 +65,7 @@ pub fn init(
+         .margin = margin,
+         .io = io,
+         .animation_delay = animation_delay,
++        .low = low_mem,
+         .info_line = info_line,
+         .fg = fg,
+         .bg = bg,
+@@ -164,6 +169,7 @@ fn calculateTimeout(self: *Lua, _: *anyopaque) !?usize {
+ fn deinit(self: *Lua) void {
+     if (self.lua_str) |str| self.allocator.free(str);
+     self.lua.deinit();
++    self.low.deinit();
+ }
+ 
+ pub fn widget(self: *Lua) *Widget {
