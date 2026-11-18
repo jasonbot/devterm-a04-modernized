@@ -1,0 +1,7 @@
+# M-VAVE FM-1 and its WL80 bootloader (USB vendor 4c4a).  The fm1 tools drive
+# the unit through the SCSI generic node, and its bootloader also shows up as
+# a USB mass-storage block device.  Both are created as root:disk by default,
+# so flashing firmware needs root.  Give the plugdev group (devterm is a
+# member) read/write access, and the seat user an ACL.
+SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="4c4a", GROUP="plugdev", MODE="0660", TAG+="uaccess"
+SUBSYSTEM=="block", KERNEL=="sd*", ATTRS{idVendor}=="4c4a", GROUP="plugdev", MODE="0660", TAG+="uaccess"

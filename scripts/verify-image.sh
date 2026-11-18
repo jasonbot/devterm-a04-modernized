@@ -26,6 +26,7 @@ for f in /boot/Image /boot/devterm-a04.dtb /boot/initrd.img \
          /usr/bin/kmscon /etc/kmscon/kmscon.conf \
          /usr/bin/cha /usr/bin/mancha /usr/libexec/chawan/cgi-bin/ssl \
          /usr/bin/wordgrinder /usr/local/bin/edit /usr/local/bin/devterm-word \
+         /etc/udev/rules.d/70-mvave-fm1.rules \
          /usr/local/bin/carboxyl /usr/local/bin/devterm-kiosk \
          /usr/share/doc/kmscon/A04-GUARD \
          /usr/local/bin/nmtui-go \
