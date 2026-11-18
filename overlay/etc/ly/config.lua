@@ -92,7 +92,7 @@ ly = {
     -- Primary battery is usually BAT0 or BAT1
     -- If set to null, battery status won't be shown
     -- Unused on FreeBSD (a sysctl is used there)
-    battery_id = "axp20x-battery",
+    battery_id = nil,
 
     -- Background color id
     bg = 0x00241F31,
@@ -204,10 +204,10 @@ ly = {
     corner_bottom_right = "labels",
 
     -- Top left
-    corner_top_left = "shutdown,restart,britup,britdown,password,battery",
+    corner_top_left = "shutdown,restart,britup,britdown,password",
 
     -- Top right
-    corner_top_right = "lbl:wifi,clock",
+    corner_top_right = "lbl:battery,lbl:wifi,clock",
 
     -- For custom binds: the horizontal limit in characters for each
     -- line of custom binds before moving on to the next.
@@ -496,6 +496,13 @@ ly = {
             label = "wifi",
             cmd = "/usr/local/bin/devterm-wifi status",
             -- Frames between refreshes; roughly ten seconds at Ly's tick rate.
+            refresh = 600,
+        },
+        {
+            -- Charge level with the Nerd Font battery glyph, same helper the
+            -- tmux bar uses (it adds a bolt while charging).
+            label = "battery",
+            cmd = "/usr/local/bin/devterm-battery",
             refresh = 600,
         },
     }
