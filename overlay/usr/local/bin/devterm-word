@@ -1,0 +1,5 @@
+#!/bin/sh
+# WordGrinder: a word processor for the text console.
+# No arguments opens the document picker.
+set -eu
+exec /usr/bin/wordgrinder "$@"

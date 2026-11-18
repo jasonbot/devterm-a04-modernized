@@ -30,6 +30,9 @@ fi
 if [ -d /work/artifacts/rustel ]; then
     cp -a /work/artifacts/rustel "$target/opt/devterm-payload/rustel"
 fi
+if [ -d /work/artifacts/edit ]; then
+    cp -a /work/artifacts/edit "$target/opt/devterm-payload/edit"
+fi
 cp -a /work/artifacts/chawan "$target/opt/devterm-payload/chawan"
 cp -a /work/artifacts/kmscon "$target/opt/devterm-payload/kmscon"
 cp -a /work/artifacts/nmtui-go "$target/opt/devterm-payload/nmtui-go"

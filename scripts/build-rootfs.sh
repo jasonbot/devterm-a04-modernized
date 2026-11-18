@@ -28,7 +28,7 @@ mkimage -A arm64 -O linux -T script -C none -n "DevTerm A04 boot" \
 chmod 777 "$ART/export"
 rm -f "$ART/export/rootfs.tar"
 
-packages="systemd-sysv,systemd-timesyncd,udev,dbus,initramfs-tools,kmod,e2fsprogs,fdisk,cloud-guest-utils,zram-tools,locales,tzdata,console-setup,keyboard-configuration,kbd,network-manager,wpasupplicant,iw,wireless-tools,rfkill,wireless-regdb,firmware-brcm80211,openssh-server,sudo,libpam-systemd,python3,socat,fonts-noto-cjk,fontconfig,fonts-dejavu-core,libfreetype6,libnss3,libnspr4,libexpat1,libasound2t64,libgbm1,libdrm2,libxkbcommon0,libstdc++6,zlib1g,libssh2-1t64,libbrotli1,libssl3t64,w3m,ca-certificates,curl,wget,less,nano,git,rsync,unzip,xz-utils,zstd,bzip2,alsa-utils,usbutils,pciutils,procps,psmisc,iproute2,iputils-ping,net-tools,htop,tmux,starship,brightnessctl"
+packages="systemd-sysv,systemd-timesyncd,udev,dbus,initramfs-tools,kmod,e2fsprogs,fdisk,cloud-guest-utils,zram-tools,locales,tzdata,console-setup,keyboard-configuration,kbd,network-manager,wpasupplicant,iw,wireless-tools,rfkill,wireless-regdb,firmware-brcm80211,openssh-server,sudo,libpam-systemd,python3,socat,fonts-noto-cjk,fontconfig,fonts-dejavu-core,libfreetype6,libnss3,libnspr4,libexpat1,libasound2t64,libgbm1,libdrm2,libxkbcommon0,libstdc++6,zlib1g,libssh2-1t64,libbrotli1,libssl3t64,w3m,ca-certificates,curl,wget,less,nano,git,rsync,unzip,xz-utils,zstd,bzip2,alsa-utils,usbutils,pciutils,procps,psmisc,iproute2,iputils-ping,net-tools,htop,tmux,starship,brightnessctl,wordgrinder-ncurses"
 
 log "building Debian trixie arm64 rootfs (this takes a few minutes)"
 podman run --rm --arch arm64 --network=host \
@@ -58,6 +58,7 @@ for f in boot/Image boot/devterm-a04.dtb boot/initrd.img \
          usr/local/share/fonts/nerd-fonts/PaperMonoNerdFont-Regular.otf \
          opt/carbonyl/carbonyl usr/local/bin/devterm-kiosk \
          opt/rustel/rustel usr/local/bin/rustel \
+         usr/bin/wordgrinder usr/local/bin/edit usr/local/bin/devterm-word \
          usr/bin/cha usr/bin/mancha usr/libexec/chawan/cgi-bin/ssl \
          usr/local/bin/carboxyl usr/local/bin/devterm-kiosk \
          usr/bin/kmscon usr/local/bin/nmtui-go \

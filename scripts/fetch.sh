@@ -11,6 +11,8 @@ CHAWAN_VER=0.5.1
 KMS_VER=10.0.4
 NMTUI_GO_VER=0.2.7
 RUSTEL_VER=0.1.6
+EDIT_VER=2.0.0
+EDIT_SHA256=b39f0b128d29d4c00f32a416c515f2c7758e0ec8d7457ee10b948e7b76636da4
 VENDOR_BASE=https://raw.githubusercontent.com/clockworkpi/apt/main/debian
 
 download() {
@@ -76,6 +78,23 @@ if [ ! -x "$ART/rustel/rustel" ]; then
     chmod 755 "$ART/rustel/rustel"
 fi
 log "Rustel: $(du -sh "$ART/rustel" | cut -f1)"
+
+# Microsoft Edit: a small TUI editor.  The release tarball holds one binary.
+if [ ! -x "$ART/edit/edit" ]; then
+    edit_tar="edit-${EDIT_VER}-aarch64-linux-gnu.tar.gz"
+    download "https://github.com/microsoft/edit/releases/download/v${EDIT_VER}/${edit_tar}" \
+        "$ART/src/${edit_tar}"
+    need sha256sum
+    need tar
+    actual=$(sha256sum "$ART/src/${edit_tar}" | cut -d' ' -f1)
+    [ "$actual" = "$EDIT_SHA256" ] || die "edit checksum mismatch"
+    rm -rf "$ART/edit" "$ART/src/edit-extract"
+    mkdir -p "$ART/edit" "$ART/src/edit-extract"
+    tar -xzf "$ART/src/${edit_tar}" -C "$ART/src/edit-extract" edit
+    cp "$ART/src/edit-extract/edit" "$ART/edit/edit"
+    chmod 755 "$ART/edit/edit"
+fi
+log "Edit: $(du -sh "$ART/edit" | cut -f1)"
 
 # Source for the additional terminal browser.  The build script does the
 # container build; caching the tarball here keeps it reproducible.

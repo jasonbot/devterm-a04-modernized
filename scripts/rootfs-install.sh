@@ -332,6 +332,10 @@ log "graphical kiosk browser"
 apt-get install -y --no-install-recommends cage cog seatd wlr-randr epiphany-browser
 
 # Rustel: Strudel live-coding engine for the terminal (prebuilt arm64).
+if [ -x "$PAYLOAD/edit/edit" ]; then
+    install -m 755 "$PAYLOAD/edit/edit" /usr/local/bin/edit
+fi
+
 if [ -x "$PAYLOAD/rustel/rustel" ]; then
     rm -rf /opt/rustel
     mkdir -p /opt/rustel

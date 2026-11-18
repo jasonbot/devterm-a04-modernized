@@ -389,6 +389,25 @@ sudo apt install ffmpeg 7zip poppler-utils fd-find ripgrep fzf zoxide
 
 The image is small and the A04 has 2 GB RAM, so add only what you use.
 
+## Word processing and editing
+
+WordGrinder writes drafts in a plain console UI; the `devterm-word` wrapper
+opens it:
+
+```sh
+devterm-word              # document picker
+devterm-word draft.wg     # open a WordGrinder document
+```
+
+Microsoft Edit is a small TUI editor with syntax highlighting:
+
+```sh
+edit notes.md
+```
+
+`Ctrl+S` saves and `Ctrl+Q` quits; `edit --help` lists the rest.  `nano` is
+still installed as the minimal fallback.
+
 ## tmux
 
 The image ships `/etc/tmux.conf`:

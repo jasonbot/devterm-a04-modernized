@@ -25,6 +25,8 @@ the system makes the root filesystem use the rest of the card.
   printer.
 - **Yazi**, a fast terminal file manager (text previews; optional preview
   tools can be installed from apt), themed with Gruvbox Material.
+- **WordGrinder** (`devterm-word`), a console word processor, and
+  **Microsoft Edit** (`edit`), a small TUI editor.
 - **devterm-print**, which prints QR codes, markdown and ZPL labels on the
   built-in thermal printer.
 - **rustel**, the native Strudel live-coding engine, for music in the
